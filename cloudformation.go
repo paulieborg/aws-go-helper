@@ -31,12 +31,10 @@ func main() {
 
 	var name, template_file, parameters string
 	var capability string = "CAPABILITY_NAMED_IAM"
-	var timeout int64
 
 	flag.StringVar(&name, "n", "", "Name")
 	flag.StringVar(&template_file, "t", "template.yml", "Template File Name.")
 	flag.StringVar(&parameters, "p", "params.json", "Params File Name.")
-	flag.Int64Var(&timeout, "d", 5, "Duration Timeout in Minutes")
 	flag.Parse()
 
 	var data params_type
@@ -70,7 +68,7 @@ func main() {
 		},
 		Parameters: cf_params,
 		TemplateBody:     aws.String(string(template)),
-		TimeoutInMinutes: aws.Int64(timeout),
+		TimeoutInMinutes: aws.Int64(5),
 	}
 
 	resp, err := svc.CreateStack(stack)
