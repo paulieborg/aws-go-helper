@@ -66,7 +66,7 @@ func main() {
 		Capabilities: []*string{
 			aws.String(capability),
 		},
-		Parameters: cf_params,
+		Parameters:       cf_params,
 		TemplateBody:     aws.String(string(template)),
 		TimeoutInMinutes: aws.Int64(5),
 	}
@@ -94,7 +94,7 @@ func formatParams(data *paramFactory) *cloudformation.Parameter {
 	var cf_params *cloudformation.Parameter
 
 	cf_params = &cloudformation.Parameter{
-		ParameterKey: &data.paramKey,
+		ParameterKey:   &data.paramKey,
 		ParameterValue: &data.paramValue,
 	}
 
