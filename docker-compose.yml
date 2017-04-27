@@ -8,9 +8,16 @@ services:
       - ".:/usr/src/myapp"
     working_dir: /usr/src/myapp
 
+  data_volume:
+    image: debian:wheezy
+    volumes:
+      - /go
+
   build:
     extends:
       service: base
+    volumes_from:
+      - data_volume
     environment:
       GOOS: linux
       GOARCH: amd64

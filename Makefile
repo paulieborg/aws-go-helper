@@ -13,4 +13,4 @@ build: get
 	chmod 777 $(BUILD_DIR) && chmod +x $(BINARY_FILE)
 
 run:
-	build/cloudformation -n MyTestStack -t network/template.yml -p network/params.json
+	build/cloudformation -n TestStack

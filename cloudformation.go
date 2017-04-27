@@ -33,8 +33,8 @@ func main() {
 	var capability string = "CAPABILITY_NAMED_IAM"
 
 	flag.StringVar(&name, "n", "", "Name")
-	flag.StringVar(&template_file, "t", "template.yml", "Template File Name.")
-	flag.StringVar(&parameters, "p", "params.json", "Params File Name.")
+	flag.StringVar(&template_file, "t", "network/template.yml", "Template File Name.")
+	flag.StringVar(&parameters, "p", "network/params.json", "Params File Name.")
 	flag.Parse()
 
 	var data params_type
@@ -83,6 +83,10 @@ func main() {
 	}
 
 	fmt.Println(resp)
+
+	stackInfo := cloudformation.DescribeStacksInput{StackName: &name}
+	svc.WaitUntilStackCreateComplete(&stackInfo)
+
 }
 
 func formatParams(data *paramFactory) *cloudformation.Parameter {
