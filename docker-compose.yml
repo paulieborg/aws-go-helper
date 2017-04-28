@@ -23,7 +23,7 @@ services:
       GOARCH: amd64
     command: make build
 
-  deploy:
+  run:
     extends:
       service: base
     environment:

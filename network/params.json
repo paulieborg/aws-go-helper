@@ -6,6 +6,7 @@
   "AppSubnetCIDR": "10.0.10.0/24,10.0.11.0/24,10.0.12.0/24",
   "DataSubnetCIDR": "10.0.20.0/24,10.0.21.0/24,10.0.22.0/24",
   "VpcFlowLogRetention": "14",
-  "VpcFlowLogTrafficType": "ALL"
+  "VpcFlowLogTrafficType": "ALL",
+  "LogForwarderPort": "9997",
+  "DbPort": "1433"
 }
-
