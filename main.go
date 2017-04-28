@@ -16,8 +16,8 @@ import (
 var (
 	action  = flag.String("a", "create", "create or delete")
 	name    = flag.String("n", "", "Stack name.")
-	tmpl    = flag.String("t", "network/template.yml", "Template file path.")
-	params  = flag.String("p", "network/params.json", "Parameters file path.")
+	tmpl    = flag.String("t", "network/test-template.yml", "Template file path.")
+	params  = flag.String("p", "network/test-params.json", "Parameters file path.")
 	timeout = flag.Int64("x", 5, "Timeout in minutes.")
 	verbose = flag.Bool("v", false, "Verbose Output")
 )
