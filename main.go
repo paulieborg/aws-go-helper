@@ -64,7 +64,7 @@ func main() {
 		}
 
 		if (strings.TrimRight(aws.StringValue(ds.Stacks[0].StackStatus), "\n") == "CREATE_COMPLETE") && *verbose {
-			fmt.Printf("Stack - +%v\n", aws.StringValue(ds.Stacks[0].StackStatus))
+			fmt.Printf("Stack - %+v\n", aws.StringValue(ds.Stacks[0].StackStatus))
 		}
 
 	} else if ( *action == "delete" ) {

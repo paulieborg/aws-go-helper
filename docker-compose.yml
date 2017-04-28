@@ -18,9 +18,18 @@ services:
       GOARCH: amd64
     command: make build
 
-  run:
+  create:
     extends:
       service: base
     environment:
       AWS_REGION: ap-southeast-2
+      ACTION: create
+    command: make run
+
+  delete:
+    extends:
+      service: base
+    environment:
+      AWS_REGION: ap-southeast-2
+      ACTION: delete
     command: make run
