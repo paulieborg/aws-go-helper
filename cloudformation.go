@@ -1,95 +1,111 @@
 package main
 
 import (
-    "bytes"
-    "flag"
-    "fmt"
+	"bytes"
+	"context"
+	"flag"
+	"fmt"
+	"time"
 
-    "encoding/json"
-    "io/ioutil"
+	"encoding/json"
+	"io/ioutil"
 
-    "github.com/aws/aws-sdk-go/aws"
-    "github.com/aws/aws-sdk-go/aws/session"
-    cf "github.com/aws/aws-sdk-go/service/cloudformation"
-//  "github.com/aws/aws-sdk-go/aws/awserr"
-//  "github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws/request"
+	cf "github.com/aws/aws-sdk-go/service/cloudformation"
+	//  "github.com/aws/aws-sdk-go/aws/awserr"
 )
 
 var (
-    name = flag.String("n", "", "Stack name.")
-    tmpl = flag.String("t", "network/template.yml", "Template file path.")
-    params = flag.String("p", "network/params.json", "Parameters file path.")
-    timeout = flag.Int64("x", 0, "Timeout in minutes.")
+	name    = flag.String("n", "", "Stack name.")
+	tmpl    = flag.String("t", "network/test-template.yml", "Template file path.")
+	params  = flag.String("p", "network/test-params.json", "Parameters file path.")
+	timeout = flag.Int64("x", 5, "Timeout in minutes.")
 )
 
 const capability string = "CAPABILITY_NAMED_IAM"
+const ctx_timeout time.Duration = 0
 
 func main() {
-    flag.Parse()
+	ctx := context.Background()
 
-    t, err := ioutil.ReadFile(*tmpl)
-    if err != nil {
-        panic(err)
-    }
+	flag.Parse()
 
-    p, err := ioutil.ReadFile(*params)
-    if err != nil {
-        panic(err)
-    }
+	t, err := ioutil.ReadFile(*tmpl)
+	if err != nil {
+		panic(err)
+	}
 
-    cfParams, err := parseParams(p)
-    if err != nil {
-        panic(err)
-    }
+	p, err := ioutil.ReadFile(*params)
+	if err != nil {
+		panic(err)
+	}
 
-    sess := session.Must(session.NewSession())
-    svc := cf.New(sess)
+	cfParams, err := parseParams(p)
+	if err != nil {
+		panic(err)
+	}
 
-    r, err := createStack(svc, cfParams, string(t))
-    if err != nil {
-        panic(err)
-    }
-    fmt.Printf("%+v\n", r)
+	sess := session.Must(session.NewSession())
+	svc := cf.New(sess)
 
-    stackInfo := cf.DescribeStacksInput{StackName: name}
-    svc.WaitUntilStackCreateComplete(&stackInfo)
+	r, err := createStack(ctx, svc, cfParams, string(t))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%+v\n", r)
+
+	waitCreate(ctx, svc, cf.DescribeStacksInput{StackName: name})
+
 }
 
 // parseParams takes a simple JSON blob of parameters and converts it to a slice
 // of CloudFormation parameter structs
 func parseParams(params []byte) (p []*cf.Parameter, err error) {
-    var sp map[string]string
+	var sp map[string]string
 
-    err = json.NewDecoder(bytes.NewReader(params)).Decode(&sp)
-    if err != nil {
-        return
-    }
+	err = json.NewDecoder(bytes.NewReader(params)).Decode(&sp)
+	if err != nil {
+		return
+	}
 
-    for k, v := range sp {
-        pkey := k
-        pval := v
-        p = append(p, &cf.Parameter{
-            ParameterKey: &pkey,
-            ParameterValue: &pval,
-        })
-    }
+	for k, v := range sp {
+		pkey := k
+		pval := v
+		p = append(p, &cf.Parameter{
+			ParameterKey:   &pkey,
+			ParameterValue: &pval,
+		})
+	}
 
-    return
+	return
 }
 
 // createStack attempts to bring up a CloudFormation stack
-func createStack(svc *cf.CloudFormation, p []*cf.Parameter, t string) (r *cf.CreateStackOutput, err error) {
-    stack := &cf.CreateStackInput{
-        StackName: aws.String(*name),
-        Capabilities: []*string{
-            aws.String(capability),
-        },
-        Parameters: p,
-        TemplateBody: aws.String(t),
-        TimeoutInMinutes: aws.Int64(*timeout),
-    }
+func createStack(ctx aws.Context, svc *cf.CloudFormation, p []*cf.Parameter, t string) (r *cf.CreateStackOutput, err error) {
+	stack := &cf.CreateStackInput{
+		StackName: aws.String(*name),
+		Capabilities: []*string{
+			aws.String(capability),
+		},
+		Parameters:       p,
+		TemplateBody:     aws.String(t),
+		TimeoutInMinutes: aws.Int64(*timeout),
+	}
 
-    return svc.CreateStack(stack)
+	return svc.CreateStackWithContext(ctx, stack)
+}
+
+func waitCreate(ctx aws.Context, svc *cf.CloudFormation, stackInfo cf.DescribeStacksInput) {
+
+	svc.WaitUntilStackCreateCompleteWithContext(
+		ctx,
+		&stackInfo,
+		request.WithWaiterDelay(request.ConstantWaiterDelay(30*time.Second)),
+	)
+
+	return
 }
 
 //  if err != nil {
