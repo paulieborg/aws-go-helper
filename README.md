@@ -8,6 +8,8 @@
 
 Using https://github.com/Masterminds/glide
 
+On Mac: `brew install glide`
+
 Setup project like so:
 ```
 mkdir -p ${HOME}/go/src/github.com/paulieborg
