@@ -1,102 +1,115 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
+
 	"encoding/json"
 	"io/ioutil"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/request"
+	//  "github.com/aws/aws-sdk-go/aws/awserr"
+	//  "github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
+type simpleParams map[string]string
 
-type paramFactory struct {
-	paramKey   string
-	paramValue string
-}
+var (
+	name   = flag.String("n", "", "Stack name.")
+	tmpl   = flag.String("t", "network/template.yml", "Template file path.")
+	params = flag.String("p", "network/params.json", "Parameters file path.")
+)
 
-type params_type map[string]string
+var capability string = "CAPABILITY_NAMED_IAM"
 
 func main() {
-
-	var name, template_file, parameters string
-	var capability string = "CAPABILITY_NAMED_IAM"
-
-	flag.StringVar(&name, "n", "", "Name")
-	flag.StringVar(&template_file, "t", "network/template.yml", "Template File Name.")
-	flag.StringVar(&parameters, "p", "network/params.json", "Params File Name.")
 	flag.Parse()
 
-	var data params_type
+	t, err := getReader(*tmpl)
+	if err != nil {
+		panic(err)
+	}
+	raw_t, err := ioutil.ReadAll(t)
+	if err != nil {
+		panic(err)
+	}
 
-	template, err := ioutil.ReadFile(template_file)
-	check(err)
+	p, err := getReader(*params)
+	if err != nil {
+		panic(err)
+	}
 
-	params, err := ioutil.ReadFile(parameters)
-	check(err)
-
-	err = json.Unmarshal(params, &data)
-	check(err)
-
-	var key string
-	var val string
-
-	var cf_params []*cloudformation.Parameter
-
-	for key, val = range data {
-
-		cf_params = append(cf_params, formatParams(&paramFactory{paramKey: key, paramValue: val}))
+	cf_params, err := parseParams(p)
+	if err != nil {
+		panic(err)
 	}
 
 	sess := session.Must(session.NewSession())
 	svc := cloudformation.New(sess)
+	r, err := createStack(svc, cf_params, string(raw_t))
+	if err != nil {
+		panic(err)
+	}
 
+	fmt.Printf("%+v\n", r)
+}
+
+func getReader(p string) (r *bufio.Reader, err error) {
+	f, err := os.Open(p)
+	if err != nil {
+		return
+	}
+
+	return bufio.NewReader(f), nil
+}
+
+func parseParams(b *bufio.Reader) (p []*cloudformation.Parameter, err error) {
+	var s_params simpleParams
+	err = json.NewDecoder(b).Decode(&s_params)
+	if err != nil {
+		return
+	}
+
+	for k, v := range s_params {
+		pkey := k
+		pval := v
+		p = append(p, &cloudformation.Parameter{
+			ParameterKey:   &pkey,
+			ParameterValue: &pval,
+		})
+	}
+
+	return
+}
+
+func createStack(svc *cloudformation.CloudFormation, p []*cloudformation.Parameter, t string) (r *cloudformation.CreateStackOutput, err error) {
 	stack := &cloudformation.CreateStackInput{
-		StackName: aws.String(name),
+		StackName: aws.String(*name),
 		Capabilities: []*string{
 			aws.String(capability),
 		},
-		Parameters:       cf_params,
-		TemplateBody:     aws.String(string(template)),
+		Parameters:       p,
+		TemplateBody:     aws.String(t),
 		TimeoutInMinutes: aws.Int64(5),
 	}
 
-	resp, err := svc.CreateStack(stack)
-
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == request.CanceledErrorCode {
-			fmt.Fprintf(os.Stderr, "upload canceled due to timeout, %v\n", err)
-		} else {
-			fmt.Fprintf(os.Stderr, "failed to upload object, %v\n", err)
-		}
-		os.Exit(1)
-	}
-
-	fmt.Println(resp)
-
-	stackInfo := cloudformation.DescribeStacksInput{StackName: &name}
-	svc.WaitUntilStackCreateComplete(&stackInfo)
-
+	return svc.CreateStack(stack)
 }
 
-func formatParams(data *paramFactory) *cloudformation.Parameter {
-
-	var cf_params *cloudformation.Parameter
-
-	cf_params = &cloudformation.Parameter{
-		ParameterKey:   &data.paramKey,
-		ParameterValue: &data.paramValue,
-	}
-
-	return cf_params
-}
+//  if err != nil {
+//      if aerr, ok := err.(awserr.Error); ok && aerr.Code() == request.CanceledErrorCode {
+//          fmt.Fprintf(os.Stderr, "upload canceled due to timeout, %v\n", err)
+//      } else {
+//          fmt.Fprintf(os.Stderr, "failed to upload object, %v\n", err)
+//      }
+//      os.Exit(1)
+//  }
+// 
+//  fmt.Println(resp)
+// 
+//  stackInfo := cloudformation.DescribeStacksInput{StackName: &name}
+//  svc.WaitUntilStackCreateComplete(&stackInfo)
