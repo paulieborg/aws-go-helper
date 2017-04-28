@@ -1,83 +1,74 @@
 package main
 
 import (
-    "bufio"
+    "bytes"
     "flag"
     "fmt"
-    "os"
 
     "encoding/json"
     "io/ioutil"
 
     "github.com/aws/aws-sdk-go/aws"
+    "github.com/aws/aws-sdk-go/aws/session"
+    cf "github.com/aws/aws-sdk-go/service/cloudformation"
 //  "github.com/aws/aws-sdk-go/aws/awserr"
 //  "github.com/aws/aws-sdk-go/aws/request"
-    "github.com/aws/aws-sdk-go/aws/session"
-    "github.com/aws/aws-sdk-go/service/cloudformation"
 )
-
-type simpleParams map[string]string
 
 var (
     name = flag.String("n", "", "Stack name.")
     tmpl = flag.String("t", "network/template.yml", "Template file path.")
     params = flag.String("p", "network/params.json", "Parameters file path.")
+    timeout = flag.Int64("x", 0, "Timeout in minutes.")
 )
 
-var capability string = "CAPABILITY_NAMED_IAM"
+const capability string = "CAPABILITY_NAMED_IAM"
 
 func main() {
     flag.Parse()
 
-    t, err := getReader(*tmpl)
-    if err != nil {
-        panic(err)
-    }
-    raw_t, err := ioutil.ReadAll(t)
+    t, err := ioutil.ReadFile(*tmpl)
     if err != nil {
         panic(err)
     }
 
-    p, err := getReader(*params)
+    p, err := ioutil.ReadFile(*params)
     if err != nil {
         panic(err)
     }
 
-    cf_params, err := parseParams(p)
+    cfParams, err := parseParams(p)
     if err != nil {
         panic(err)
     }
 
     sess := session.Must(session.NewSession())
-    svc := cloudformation.New(sess)
-    r, err := createStack(svc, cf_params, string(raw_t))
+    svc := cf.New(sess)
+
+    r, err := createStack(svc, cfParams, string(t))
     if err != nil {
         panic(err)
     }
-
     fmt.Printf("%+v\n", r)
+
+    stackInfo := cf.DescribeStacksInput{StackName: name}
+    svc.WaitUntilStackCreateComplete(&stackInfo)
 }
 
-func getReader(p string) (r *bufio.Reader, err error) {
-    f, err := os.Open(p)
+// parseParams takes a simple JSON blob of parameters and converts it to a slice
+// of CloudFormation parameter structs
+func parseParams(params []byte) (p []*cf.Parameter, err error) {
+    var sp map[string]string
+
+    err = json.NewDecoder(bytes.NewReader(params)).Decode(&sp)
     if err != nil {
         return
     }
 
-    return bufio.NewReader(f), nil
-}
-
-func parseParams(b *bufio.Reader) (p []*cloudformation.Parameter, err error) {
-    var s_params simpleParams
-    err = json.NewDecoder(b).Decode(&s_params)
-    if err != nil {
-        return
-    }
-
-    for k, v := range s_params {
+    for k, v := range sp {
         pkey := k
         pval := v
-        p = append(p, &cloudformation.Parameter{
+        p = append(p, &cf.Parameter{
             ParameterKey: &pkey,
             ParameterValue: &pval,
         })
@@ -86,15 +77,16 @@ func parseParams(b *bufio.Reader) (p []*cloudformation.Parameter, err error) {
     return
 }
 
-func createStack(svc *cloudformation.CloudFormation, p []*cloudformation.Parameter, t string) (r *cloudformation.CreateStackOutput, err error) {
-    stack := &cloudformation.CreateStackInput{
+// createStack attempts to bring up a CloudFormation stack
+func createStack(svc *cf.CloudFormation, p []*cf.Parameter, t string) (r *cf.CreateStackOutput, err error) {
+    stack := &cf.CreateStackInput{
         StackName: aws.String(*name),
         Capabilities: []*string{
             aws.String(capability),
         },
         Parameters: p,
         TemplateBody: aws.String(t),
-        TimeoutInMinutes: aws.Int64(5),
+        TimeoutInMinutes: aws.Int64(*timeout),
     }
 
     return svc.CreateStack(stack)
@@ -108,8 +100,3 @@ func createStack(svc *cloudformation.CloudFormation, p []*cloudformation.Paramet
 //      }
 //      os.Exit(1)
 //  }
-// 
-//  fmt.Println(resp)
-// 
-//  stackInfo := cloudformation.DescribeStacksInput{StackName: &name}
-//  svc.WaitUntilStackCreateComplete(&stackInfo)
