@@ -64,7 +64,7 @@ func main() {
 		}
 
 		if (strings.TrimRight(aws.StringValue(ds.Stacks[0].StackStatus), "\n") == "CREATE_COMPLETE") && *verbose {
-			fmt.Printf("Stack - %+v\n", aws.StringValue(ds.Stacks[0].StackStatus))
+			fmt.Printf("Stack - %s\n", aws.StringValue(ds.Stacks[0].StackStatus))
 		}
 
 	} else if ( *action == "delete" ) {
@@ -76,7 +76,7 @@ func main() {
 		actions.AwsWaitDelete(ctx, svc, cf.DescribeStacksInput{StackName: name})
 
 	} else {
-		fmt.Printf("Unknown action '%+v'\n", action)
+		fmt.Printf("Unknown action '%s'\n", action)
 	}
 }
 
