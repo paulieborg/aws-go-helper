@@ -1,4 +1,4 @@
-.PHONY: get
+.PHONY: get build run
 
 BUILD_DIR=./build
 
