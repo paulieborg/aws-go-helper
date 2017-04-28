@@ -2,18 +2,18 @@ package main
 
 import (
     "bufio"
-	"flag"
-	"fmt"
-	"os"
+    "flag"
+    "fmt"
+    "os"
 
-	"encoding/json"
-	"io/ioutil"
+    "encoding/json"
+    "io/ioutil"
 
-	"github.com/aws/aws-sdk-go/aws"
-//	"github.com/aws/aws-sdk-go/aws/awserr"
-//	"github.com/aws/aws-sdk-go/aws/request"
+    "github.com/aws/aws-sdk-go/aws"
+//  "github.com/aws/aws-sdk-go/aws/awserr"
+//  "github.com/aws/aws-sdk-go/aws/request"
     "github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/cloudformation"
+    "github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
 type simpleParams map[string]string
@@ -27,16 +27,16 @@ var (
 var capability string = "CAPABILITY_NAMED_IAM"
 
 func main() {
-	flag.Parse()
+    flag.Parse()
 
-	t, err := getReader(*tmpl)
-	if err != nil {
-    	panic(err)
-	}
-	raw_t, err := ioutil.ReadAll(t)
-	if err != nil {
-    	panic(err)
-	}
+    t, err := getReader(*tmpl)
+    if err != nil {
+        panic(err)
+    }
+    raw_t, err := ioutil.ReadAll(t)
+    if err != nil {
+        panic(err)
+    }
 
     p, err := getReader(*params)
     if err != nil {
@@ -100,16 +100,16 @@ func createStack(svc *cloudformation.CloudFormation, p []*cloudformation.Paramet
     return svc.CreateStack(stack)
 }
 
-// 	if err != nil {
-// 		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == request.CanceledErrorCode {
-// 			fmt.Fprintf(os.Stderr, "upload canceled due to timeout, %v\n", err)
-// 		} else {
-// 			fmt.Fprintf(os.Stderr, "failed to upload object, %v\n", err)
-// 		}
-// 		os.Exit(1)
-// 	}
+//  if err != nil {
+//      if aerr, ok := err.(awserr.Error); ok && aerr.Code() == request.CanceledErrorCode {
+//          fmt.Fprintf(os.Stderr, "upload canceled due to timeout, %v\n", err)
+//      } else {
+//          fmt.Fprintf(os.Stderr, "failed to upload object, %v\n", err)
+//      }
+//      os.Exit(1)
+//  }
 // 
-// 	fmt.Println(resp)
+//  fmt.Println(resp)
 // 
-// 	stackInfo := cloudformation.DescribeStacksInput{StackName: &name}
-// 	svc.WaitUntilStackCreateComplete(&stackInfo)
+//  stackInfo := cloudformation.DescribeStacksInput{StackName: &name}
+//  svc.WaitUntilStackCreateComplete(&stackInfo)
