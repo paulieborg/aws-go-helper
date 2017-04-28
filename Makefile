@@ -1,17 +1,17 @@
-.PHONY: get build run
+.PHONY: glide build run
 
-BUILD_DIR=./build
+BUILD_DIR=./bin
 
 BINARY_FILE:=$(BUILD_DIR)/cloudformation
 
-get:
-	go get -u github.com/aws/aws-sdk-go
+glide:
+	glide install
 
-build: get
+build: glide
 	@echo "+++ building for $(GOOS)-$(GOARCH) ..."
 	go build -v -o $(BINARY_FILE)
-	chmod 777 $(BUILD_DIR) && chmod +x $(BINARY_FILE)
+	chmod 755 $(BUILD_DIR) && chmod +x $(BINARY_FILE)
 
 run:
 	#Use defaults -n MyTestStack -t network/template.yml -p network/params.json
-	build/cloudformation
+	bin/cloudformation

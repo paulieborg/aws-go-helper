@@ -1,0 +1,8 @@
+package: github.com/paulieborg/aws-go-helper
+import:
+- package: github.com/aws/aws-sdk-go
+  version: v1.8.17
+  subpackages:
+  - aws
+  - aws/session
+  - service/cloudformation

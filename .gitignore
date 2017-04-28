@@ -16,5 +16,5 @@
 .glide/
 
 .idea/
-build/
-aws-go-helper
+bin/
+vendor/

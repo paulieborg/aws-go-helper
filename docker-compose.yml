@@ -2,22 +2,17 @@ version: '2'
 
 services:
   base:
-    image: golang:1.6
+    build: .
     volumes:
       - "$HOME/.aws:/root/.aws"
-      - ".:/usr/src/myapp"
-    working_dir: /usr/src/myapp
-
-  data_volume:
-    image: debian:wheezy
-    volumes:
-      - /go
+      - ".:/root/src/github.com/paulieborg/aws-go-helper"
+    environment:
+      GOPATH: /root
+    working_dir: /root/src/github.com/paulieborg/aws-go-helper
 
   build:
     extends:
       service: base
-    volumes_from:
-      - data_volume
     environment:
       GOOS: linux
       GOARCH: amd64
