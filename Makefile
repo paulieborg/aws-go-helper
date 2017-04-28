@@ -1,4 +1,4 @@
-.PHONY: get
+.PHONY: get build run
 
 BUILD_DIR=./build
 
@@ -13,4 +13,5 @@ build: get
 	chmod 777 $(BUILD_DIR) && chmod +x $(BINARY_FILE)
 
 run:
-	build/cloudformation -n TestStack
+	#Use defaults -n MyTestStack -t network/template.yml -p network/params.json
+	build/cloudformation
