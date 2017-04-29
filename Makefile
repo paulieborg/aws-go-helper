@@ -14,4 +14,4 @@ build: glide
 
 run:
 	#Use defaults -n MyTestStack -t network/template.yml -p network/params.json
-	bin/cloudformation -n MyTestStack -a $(ACTION) -v
+	bin/cloudformation -n MyTestStack -a $(ACTION)
