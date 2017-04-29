@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-func waitCreate(
+func waitUpdate(
 	ctx aws.Context,
 	svc *cf.CloudFormation,
 	stackInfo cf.DescribeStacksInput) {
 
-	svc.WaitUntilStackCreateCompleteWithContext(
+	svc.WaitUntilStackUpdateCompleteWithContext(
 		ctx,
 		&stackInfo,
 		request.WithWaiterDelay(request.ConstantWaiterDelay(30*time.Second)),

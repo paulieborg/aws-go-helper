@@ -23,7 +23,7 @@ services:
       service: base
     environment:
       AWS_REGION: ap-southeast-2
-      ACTION: create
+      ACTION: provision
     command: make run
 
   delete:
