@@ -5,16 +5,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 )
 
-var capability string = "CAPABILITY_NAMED_IAM"
-
 // createStack attempts to bring up a CloudFormation stack
-func Create(
+func create(
 	ctx aws.Context,
 	svc *cf.CloudFormation,
 	parameter []*cf.Parameter,
 	name string,
 	template string,
-	timeout int64, ) (r *cf.CreateStackOutput, err error) {
+	timeout int64, ) (err error) {
 
 	stack := &cf.CreateStackInput{
 		StackName: aws.String(name),
@@ -26,5 +24,9 @@ func Create(
 		TimeoutInMinutes: aws.Int64(timeout),
 	}
 
-	return svc.CreateStackWithContext(ctx, stack)
+	_, err = svc.CreateStackWithContext(ctx, stack)
+
+	waitCreate(ctx, svc, cf.DescribeStacksInput{StackName: &name})
+
+	return err
 }

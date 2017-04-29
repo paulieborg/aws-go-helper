@@ -1,6 +1,6 @@
 {
   "EnvironmentName": "test",
-  "VpcCIDR": "10.0.0.0/16"
+  "VpcCIDR": "10.1.0.0/16"
 }
 
 

@@ -10,7 +10,7 @@ import (
 	"github.com/paulieborg/aws-go-helper/parsers"
 	"github.com/paulieborg/aws-go-helper/actions"
 	"io/ioutil"
-	"strings"
+	//"strings"
 )
 
 var (
@@ -44,24 +44,20 @@ func main() {
 	sess := session.Must(session.NewSession())
 	svc := cf.New(sess)
 
-	if *action == "create" {
+	if *action == "provision" {
 
-		r, err := actions.Create(ctx, svc, cfParams, *name, string(t), *timeout)
+		err := actions.Provision(ctx, svc, cfParams, *name, string(t), *timeout)
+		if err != nil {
+			panic(err)
+		}
+
+		ds, err := actions.Describe(ctx, svc, cf.DescribeStacksInput{StackName: name})
+
 		if err != nil {
 			panic(err)
 		}
 
 		if *verbose {
-			fmt.Printf("%+v\n", r)
-		}
-
-		actions.WaitCreate(ctx, svc, cf.DescribeStacksInput{StackName: name})
-		ds, err := actions.Describe(ctx, svc, cf.DescribeStacksInput{StackName: name})
-		if err != nil {
-			panic(err)
-		}
-
-		if (strings.TrimRight(aws.StringValue(ds.Stacks[0].StackStatus), "\n") == "CREATE_COMPLETE") && *verbose {
 			fmt.Printf("Stack - %s\n", aws.StringValue(ds.Stacks[0].StackStatus))
 		}
 
