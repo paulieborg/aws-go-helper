@@ -10,8 +10,8 @@ import (
 
 func (p_args *ProvisionArgs) s3upload() (path string, err error) {
 
-	sess := session.Must(session.NewSession())
-	svc := s3.New(sess)
+	s := session.Must(session.NewSession())
+	svc := s3.New(s)
 
 	url := "https://s3-" + os.Getenv("AWS_REGION") + ".amazonaws.com/"
 	file_path := "/cloudformation-templates/" + p_args.Stack_name
