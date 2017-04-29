@@ -1,13 +1,8 @@
 package actions
 
-import (
-	"github.com/aws/aws-sdk-go/aws"
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
-)
+func exists(p_args ProvisionArgs, ) (e bool) {
 
-func exists(ctx aws.Context, svc *cf.CloudFormation, name string) (e bool) {
-
-	ds, _ := Describe(ctx, svc, cf.DescribeStacksInput{StackName: &name})
+	ds, _ := Describe(p_args)
 
 	if len(ds.Stacks) > 0 {
 		return true

@@ -8,25 +8,21 @@ import (
 
 // updateStack attempts to update an existing CloudFormation stack
 func update(
-	ctx aws.Context,
-	svc *cf.CloudFormation,
-	parameter []*cf.Parameter,
-	name string,
-	template string) (err error) {
+	p_args ProvisionArgs) (err error) {
 
 	stack := &cf.UpdateStackInput{
-		StackName: aws.String(name),
+		StackName: aws.String(p_args.Stack_name),
 		Capabilities: []*string{
 			aws.String(capability),
 		},
-		Parameters:   parameter,
-		TemplateBody: aws.String(template),
+		Parameters:   p_args.Parameters,
+		TemplateBody: aws.String(p_args.Template),
 	}
 
-	_, err = svc.UpdateStackWithContext(ctx, stack)
+	_, err = p_args.Session.UpdateStackWithContext(p_args.Context, stack)
 	helpers.ErrorHandler(err)
 
-	waitUpdate(ctx, svc, cf.DescribeStacksInput{StackName: &name})
+	waitUpdate(p_args)
 
 	return
 

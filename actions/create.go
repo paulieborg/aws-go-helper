@@ -7,27 +7,21 @@ import (
 )
 
 // createStack attempts to bring up a CloudFormation stack
-func create(
-	ctx aws.Context,
-	svc *cf.CloudFormation,
-	parameter []*cf.Parameter,
-	name string,
-	template string,
-	timeout int64, ) (err error) {
+func create(p_args ProvisionArgs) (err error) {
 
 	stack := &cf.CreateStackInput{
-		StackName: aws.String(name),
+		StackName: aws.String(p_args.Stack_name),
 		Capabilities: []*string{
 			aws.String(capability),
 		},
-		Parameters:       parameter,
-		TemplateBody:     aws.String(template),
-		TimeoutInMinutes: aws.Int64(timeout),
+		Parameters:       p_args.Parameters,
+		TemplateBody:     aws.String(p_args.Template),
+		TimeoutInMinutes: aws.Int64(p_args.Timeout),
 	}
 
-	_, err = svc.CreateStackWithContext(ctx, stack)
+	_, err = p_args.Session.CreateStackWithContext(p_args.Context, stack)
 	helpers.ErrorHandler(err)
 
-	waitCreate(ctx, svc, cf.DescribeStacksInput{StackName: &name})
+	waitCreate(p_args)
 	return
 }

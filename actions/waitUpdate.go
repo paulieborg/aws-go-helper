@@ -1,20 +1,18 @@
 package actions
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/aws/request"
+	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"time"
 )
 
-func waitUpdate(
-	ctx aws.Context,
-	svc *cf.CloudFormation,
-	stackInfo cf.DescribeStacksInput) {
+func waitUpdate(p_args ProvisionArgs, ) {
 
-	svc.WaitUntilStackUpdateCompleteWithContext(
-		ctx,
-		&stackInfo,
+	filter := cf.DescribeStacksInput{StackName: &p_args.Stack_name}
+
+	p_args.Session.WaitUntilStackUpdateCompleteWithContext(
+		p_args.Context,
+		&filter,
 		request.WithWaiterDelay(request.ConstantWaiterDelay(30*time.Second)),
 	)
 

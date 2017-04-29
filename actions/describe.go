@@ -1,10 +1,10 @@
 package actions
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
-func Describe(ctx aws.Context, svc *cf.CloudFormation, input cf.DescribeStacksInput) (d *cf.DescribeStacksOutput, err error) {
-	return svc.DescribeStacksWithContext(ctx, &input)
+func Describe(p_args ProvisionArgs, ) (d *cf.DescribeStacksOutput, err error) {
+	input := cf.DescribeStacksInput{StackName: &p_args.Stack_name}
+	return p_args.Session.DescribeStacksWithContext(p_args.Context, &input)
 }
