@@ -13,7 +13,7 @@ func WaitDelete(p_args ProvisionArgs, ) {
 	p_args.Session.WaitUntilStackDeleteCompleteWithContext(
 		p_args.Context,
 		&input,
-		request.WithWaiterDelay(request.ConstantWaiterDelay(30*time.Second)),
+		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
 	)
 
 	return

@@ -15,9 +15,10 @@ func ErrorHandler(err error) {
 			os.Exit(0)
 		} else if strings.Contains(err.Error(), "ExpiredToken: The security token included in the request is expired") {
 			fmt.Print("The security token included in the request is expired.\n")
-			os.Exit(0)
+			os.Exit(1)
 		} else {
-			panic(err)
+			fmt.Errorf(err.Error())
+			os.Exit(1)
 		}
 	}
 

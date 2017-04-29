@@ -13,7 +13,7 @@ func waitUpdate(p_args ProvisionArgs, ) {
 	p_args.Session.WaitUntilStackUpdateCompleteWithContext(
 		p_args.Context,
 		&filter,
-		request.WithWaiterDelay(request.ConstantWaiterDelay(30*time.Second)),
+		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
 	)
 
 	return
