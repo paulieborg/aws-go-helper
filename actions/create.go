@@ -3,6 +3,7 @@ package actions
 import (
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/paulieborg/aws-go-helper/helpers"
 )
 
 // createStack attempts to bring up a CloudFormation stack
@@ -25,8 +26,8 @@ func create(
 	}
 
 	_, err = svc.CreateStackWithContext(ctx, stack)
+	helpers.ErrorHandler(err)
 
 	waitCreate(ctx, svc, cf.DescribeStacksInput{StackName: &name})
-
-	return err
+	return
 }

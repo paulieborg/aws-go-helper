@@ -3,8 +3,7 @@ package actions
 import (
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/aws"
-	"strings"
-	"fmt"
+	"github.com/paulieborg/aws-go-helper/helpers"
 )
 
 // updateStack attempts to update an existing CloudFormation stack
@@ -24,15 +23,8 @@ func update(
 		TemplateBody: aws.String(template),
 	}
 
-	_, updateError := svc.UpdateStackWithContext(ctx, stack)
-
-	if updateError != nil {
-		if strings.Contains(updateError.Error(), "ValidationError: No updates are to be performed.") {
-			fmt.Print("No updates are to be performed.\n")
-			return
-		}
-		return updateError
-	}
+	_, err = svc.UpdateStackWithContext(ctx, stack)
+	helpers.ErrorHandler(err)
 
 	waitUpdate(ctx, svc, cf.DescribeStacksInput{StackName: &name})
 

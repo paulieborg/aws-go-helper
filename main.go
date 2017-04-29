@@ -9,8 +9,9 @@ import (
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/paulieborg/aws-go-helper/parsers"
 	"github.com/paulieborg/aws-go-helper/actions"
+	"github.com/paulieborg/aws-go-helper/helpers"
 	"io/ioutil"
-	//"strings"
+	"os"
 )
 
 var (
@@ -28,18 +29,14 @@ func main() {
 	flag.Parse()
 
 	t, err := readFile(*tmpl)
-	if err != nil {
-		panic(err)
-	}
+	helpers.ErrorHandler(err)
 
 	p, err := readFile(*params)
-	if err != nil {
-		panic(err)
-	}
+	helpers.ErrorHandler(err)
+
 	cfParams, err := parsers.ParseParams(p)
-	if err != nil {
-		panic(err)
-	}
+	helpers.ErrorHandler(err)
+
 
 	sess := session.Must(session.NewSession())
 	svc := cf.New(sess)
@@ -47,15 +44,10 @@ func main() {
 	if *action == "provision" {
 
 		err := actions.Provision(ctx, svc, cfParams, *name, string(t), *timeout)
-		if err != nil {
-			panic(err)
-		}
+		helpers.ErrorHandler(err)
 
 		ds, err := actions.Describe(ctx, svc, cf.DescribeStacksInput{StackName: name})
-
-		if err != nil {
-			panic(err)
-		}
+		helpers.ErrorHandler(err)
 
 		if *verbose {
 			fmt.Printf("Stack - %s\n", aws.StringValue(ds.Stacks[0].StackStatus))
@@ -63,9 +55,7 @@ func main() {
 
 	} else if *action == "delete" {
 		_, err = actions.Delete(ctx, svc, cf.DeleteStackInput{StackName: name})
-		if err != nil {
-			panic(err)
-		}
+		helpers.ErrorHandler(err)
 
 		actions.WaitDelete(ctx, svc, cf.DescribeStacksInput{StackName: name})
 
@@ -76,4 +66,9 @@ func main() {
 
 func readFile(f string) (t []byte, err error) {
 	return ioutil.ReadFile(f)
+}
+
+func usage() {
+	flag.PrintDefaults()
+	os.Exit(1)
 }

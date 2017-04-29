@@ -17,15 +17,9 @@ func Provision(
 	timeout int64, ) (err error) {
 
 	if exists(ctx, svc, name) {
-		uError := update(ctx, svc, parameter, name, string(template))
-		if uError != nil {
-			return uError
-		}
+		err = update(ctx, svc, parameter, name, string(template))
 	} else {
-		cError := create(ctx, svc, parameter, name, string(template), timeout)
-		if cError != nil {
-			return cError
-		}
+		err = create(ctx, svc, parameter, name, string(template), timeout)
 	}
 
 	return

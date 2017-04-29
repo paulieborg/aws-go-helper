@@ -18,7 +18,7 @@ services:
       GOARCH: amd64
     command: make build
 
-  create:
+  provision:
     extends:
       service: base
     environment:
