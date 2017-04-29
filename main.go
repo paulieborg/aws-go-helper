@@ -21,6 +21,7 @@ var (
 	name     = flag.String("n", "", "Stack name.")
 	template = flag.String("t", "network/test-template.yml", "Template file path.")
 	params   = flag.String("p", "network/test-params.json", "Parameters file path.")
+	bucket   = flag.String("b", "", "Bucket to upload template.")
 	timeout  = flag.Int64("x", 5, "Timeout in minutes.")
 )
 
@@ -47,6 +48,7 @@ func main() {
 		Parameters: cfParams,
 		Stack_name: *name,
 		Template:   string(t),
+		Bucket:     *bucket,
 		Timeout:    *timeout, }
 
 	switch *action {

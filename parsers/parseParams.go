@@ -17,11 +17,11 @@ func ParseParams(params []byte) (p []*cf.Parameter, err error) {
 	}
 
 	for k, v := range sp {
-		pkey := k
-		pval := v
+		p_key := k
+		p_val := v
 		p = append(p, &cf.Parameter{
-			ParameterKey:   &pkey,
-			ParameterValue: &pval,
+			ParameterKey:   &p_key,
+			ParameterValue: &p_val,
 		})
 	}
 

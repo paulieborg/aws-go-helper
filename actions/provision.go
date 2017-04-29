@@ -14,6 +14,7 @@ type ProvisionArgs struct {
 	Parameters []*cf.Parameter
 	Stack_name string
 	Template   string
+	Bucket   string
 	Timeout    int64
 }
 
