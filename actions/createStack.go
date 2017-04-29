@@ -5,6 +5,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 )
 
+var capability string = "CAPABILITY_NAMED_IAM"
+
 // createStack attempts to bring up a CloudFormation stack
 func AwsCreateStack(
 	ctx aws.Context,
@@ -12,13 +14,12 @@ func AwsCreateStack(
 	parameter []*cf.Parameter,
 	name string,
 	template string,
-	compatibility string,
 	timeout int64, ) (r *cf.CreateStackOutput, err error) {
 
 	stack := &cf.CreateStackInput{
 		StackName: aws.String(name),
 		Capabilities: []*string{
-			aws.String(compatibility),
+			aws.String(capability),
 		},
 		Parameters:       parameter,
 		TemplateBody:     aws.String(template),

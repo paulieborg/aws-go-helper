@@ -22,8 +22,6 @@ var (
 	verbose = flag.Bool("v", false, "Verbose Output")
 )
 
-const capability string = "CAPABILITY_NAMED_IAM"
-
 func main() {
 	ctx := context.Background()
 
@@ -48,7 +46,7 @@ func main() {
 
 	if ( *action == "create") {
 
-		r, err := actions.AwsCreateStack(ctx, svc, cfParams, *name, string(t), capability, *timeout)
+		r, err := actions.AwsCreateStack(ctx, svc, cfParams, *name, string(t), *timeout)
 		if err != nil {
 			panic(err)
 		}
