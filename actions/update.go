@@ -20,7 +20,9 @@ func (p_args *ProvisionArgs) update() (err error) {
 	if p_args.Bucket == "" {
 		stack.TemplateBody = aws.String(string(p_args.Template))
 	} else {
-		stack.TemplateURL = aws.String(p_args.Bucket)
+		path, err := p_args.s3upload()
+		helpers.ErrorHandler(err)
+		stack.TemplateURL = aws.String(path)
 	}
 
 	_, err = p_args.Session.UpdateStackWithContext(p_args.Context, stack)

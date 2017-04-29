@@ -9,13 +9,14 @@ import (
 var capability string = "CAPABILITY_NAMED_IAM"
 
 type ProvisionArgs struct {
-	Context    aws.Context
-	Session    *cf.CloudFormation
-	Parameters []*cf.Parameter
-	Stack_name string
-	Template   []byte
-	Bucket     string
-	Timeout    int64
+	Context          aws.Context
+	Session          *cf.CloudFormation
+	Parameters       []*cf.Parameter
+	Stack_name       string
+	Template         []byte
+	TemplateFileName string
+	Bucket           string
+	Timeout          int64
 }
 
 // Provision a CloudFormation stack

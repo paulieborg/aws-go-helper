@@ -43,13 +43,14 @@ func main() {
 	svc := cf.New(s)
 
 	p_args := actions.ProvisionArgs{
-		Context:    ctx,
-		Session:    svc,
-		Parameters: cfParams,
-		Stack_name: *name,
-		Template:   t,
-		Bucket:     *bucket,
-		Timeout:    *timeout, }
+		Context:          ctx,
+		Session:          svc,
+		Parameters:       cfParams,
+		Stack_name:       *name,
+		Template:         t,
+		TemplateFileName: *template,
+		Bucket:           *bucket,
+		Timeout:          *timeout, }
 
 	switch *action {
 	case "provision":
