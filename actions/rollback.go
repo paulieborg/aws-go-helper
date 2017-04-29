@@ -1,8 +1,8 @@
 package actions
 
-func rolledback(p_args ProvisionArgs, ) (e bool) {
+func (p_args *ProvisionArgs) rollback() (e bool) {
 
-	ds, _ := Describe(p_args)
+	ds, _ := p_args.Describe()
 
 	if *ds.Stacks[0].StackStatus == "ROLLBACK_COMPLETE" {
 		return true

@@ -1,8 +1,8 @@
 package actions
 
-func exists(p_args ProvisionArgs, ) (e bool) {
+func (p_args *ProvisionArgs) exists() (e bool) {
 
-	ds, _ := Describe(p_args)
+	ds, _ := p_args.Describe()
 
 	if len(ds.Stacks) > 0 {
 		return true

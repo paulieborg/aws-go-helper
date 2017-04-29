@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func waitCreate(p_args ProvisionArgs, ) {
+func (p_args *ProvisionArgs) waitCreate() {
 	input := cf.DescribeStacksInput{StackName: &p_args.Stack_name}
 
 	p_args.Session.WaitUntilStackCreateCompleteWithContext(

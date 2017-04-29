@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func waitUpdate(p_args ProvisionArgs, ) {
+func (p_args *ProvisionArgs) waitUpdate() {
 
 	filter := cf.DescribeStacksInput{StackName: &p_args.Stack_name}
 

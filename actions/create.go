@@ -7,7 +7,7 @@ import (
 )
 
 // createStack attempts to bring up a CloudFormation stack
-func create(p_args ProvisionArgs) (err error) {
+func (p_args *ProvisionArgs) create() (err error) {
 
 	stack := &cf.CreateStackInput{
 		StackName: aws.String(p_args.Stack_name),
@@ -15,13 +15,18 @@ func create(p_args ProvisionArgs) (err error) {
 			aws.String(capability),
 		},
 		Parameters:       p_args.Parameters,
-		TemplateBody:     aws.String(p_args.Template),
 		TimeoutInMinutes: aws.Int64(p_args.Timeout),
+	}
+
+	if p_args.Bucket == "" {
+		stack.TemplateBody = aws.String(string(p_args.Template))
+	} else {
+		stack.TemplateURL = aws.String(p_args.Bucket)
 	}
 
 	_, err = p_args.Session.CreateStackWithContext(p_args.Context, stack)
 	helpers.ErrorHandler(err)
 
-	waitCreate(p_args)
+	p_args.waitCreate()
 	return
 }

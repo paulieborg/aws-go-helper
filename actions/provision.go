@@ -13,23 +13,23 @@ type ProvisionArgs struct {
 	Session    *cf.CloudFormation
 	Parameters []*cf.Parameter
 	Stack_name string
-	Template   string
-	Bucket   string
+	Template   []byte
+	Bucket     string
 	Timeout    int64
 }
 
 // Provision a CloudFormation stack
-func Provision(p_args ProvisionArgs, ) (err error) {
+func (p_args *ProvisionArgs) Provision() (err error) {
 
-	if exists(p_args) && rolledback(p_args) {
-		Delete(p_args)
+	if p_args.exists() && p_args.rollback() {
+		p_args.Delete()
 		helpers.ErrorHandler(err)
-		WaitDelete(p_args)
-		create(p_args)
-	} else if exists(p_args) {
-		err = update(p_args)
+		p_args.WaitDelete()
+		p_args.create()
+	} else if p_args.exists() {
+		err = p_args.update()
 	} else {
-		err = create(p_args)
+		err = p_args.create()
 	}
 
 	return

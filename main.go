@@ -21,7 +21,7 @@ var (
 	name     = flag.String("n", "", "Stack name.")
 	template = flag.String("t", "network/test-template.yml", "Template file path.")
 	params   = flag.String("p", "network/test-params.json", "Parameters file path.")
-	bucket   = flag.String("b", "", "Bucket to upload template.")
+	bucket   = flag.String("b", "", "Bucket containing template.")
 	timeout  = flag.Int64("x", 5, "Timeout in minutes.")
 )
 
@@ -39,29 +39,29 @@ func main() {
 	cfParams, err := parsers.ParseParams(p)
 	helpers.ErrorHandler(err)
 
-	sess := session.Must(session.NewSession())
-	svc := cf.New(sess)
+	s := session.Must(session.NewSession())
+	svc := cf.New(s)
 
 	p_args := actions.ProvisionArgs{
 		Context:    ctx,
 		Session:    svc,
 		Parameters: cfParams,
 		Stack_name: *name,
-		Template:   string(t),
+		Template:   t,
 		Bucket:     *bucket,
 		Timeout:    *timeout, }
 
 	switch *action {
 	case "provision":
-		err := actions.Provision(p_args)
+		err := p_args.Provision()
 		helpers.ErrorHandler(err)
-		ds, err := actions.Describe(p_args)
+		ds, err := p_args.Describe()
 		helpers.ErrorHandler(err)
 		fmt.Printf("Stack - %s\n", aws.StringValue(ds.Stacks[0].StackStatus))
 	case "delete":
-		_, err = actions.Delete(p_args)
+		_, err = p_args.Delete()
 		helpers.ErrorHandler(err)
-		actions.WaitDelete(p_args)
+		p_args.WaitDelete()
 	default:
 		fmt.Printf("Unknown action '%s'\n", *action)
 	}
