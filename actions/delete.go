@@ -5,6 +5,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 )
 
-func AwsDeleteStack(ctx aws.Context, svc *cf.CloudFormation, input cf.DeleteStackInput) (d *cf.DeleteStackOutput, err error) {
+func Delete(ctx aws.Context, svc *cf.CloudFormation, input cf.DeleteStackInput) (d *cf.DeleteStackOutput, err error) {
 	return svc.DeleteStackWithContext(ctx, &input)
 }

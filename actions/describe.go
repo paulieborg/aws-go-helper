@@ -5,6 +5,6 @@ import (
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
-func AwsDescribeStacks(ctx aws.Context, svc *cf.CloudFormation, input cf.DescribeStacksInput) (d *cf.DescribeStacksOutput, err error) {
+func Describe(ctx aws.Context, svc *cf.CloudFormation, input cf.DescribeStacksInput) (d *cf.DescribeStacksOutput, err error) {
 	return svc.DescribeStacksWithContext(ctx, &input)
 }

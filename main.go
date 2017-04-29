@@ -46,7 +46,7 @@ func main() {
 
 	if ( *action == "create") {
 
-		r, err := actions.AwsCreateStack(ctx, svc, cfParams, *name, string(t), *timeout)
+		r, err := actions.Create(ctx, svc, cfParams, *name, string(t), *timeout)
 		if err != nil {
 			panic(err)
 		}
@@ -55,8 +55,8 @@ func main() {
 			fmt.Printf("%+v\n", r)
 		}
 
-		actions.AwsWaitCreateStack(ctx, svc, cf.DescribeStacksInput{StackName: name})
-		ds, err := actions.AwsDescribeStacks(ctx, svc, cf.DescribeStacksInput{StackName: name})
+		actions.WaitCreate(ctx, svc, cf.DescribeStacksInput{StackName: name})
+		ds, err := actions.Describe(ctx, svc, cf.DescribeStacksInput{StackName: name})
 		if err != nil {
 			panic(err)
 		}
@@ -66,12 +66,12 @@ func main() {
 		}
 
 	} else if ( *action == "delete" ) {
-		_, err = actions.AwsDeleteStack(ctx, svc, cf.DeleteStackInput{StackName: name})
+		_, err = actions.Delete(ctx, svc, cf.DeleteStackInput{StackName: name})
 		if err != nil {
 			panic(err)
 		}
 
-		actions.AwsWaitDelete(ctx, svc, cf.DescribeStacksInput{StackName: name})
+		actions.WaitDelete(ctx, svc, cf.DescribeStacksInput{StackName: name})
 
 	} else {
 		fmt.Printf("Unknown action '%s'\n", action)

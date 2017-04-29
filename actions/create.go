@@ -8,7 +8,7 @@ import (
 var capability string = "CAPABILITY_NAMED_IAM"
 
 // createStack attempts to bring up a CloudFormation stack
-func AwsCreateStack(
+func Create(
 	ctx aws.Context,
 	svc *cf.CloudFormation,
 	parameter []*cf.Parameter,

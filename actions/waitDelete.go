@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func AwsWaitDelete(ctx aws.Context, svc *cf.CloudFormation, input cf.DescribeStacksInput) {
+func WaitDelete(ctx aws.Context, svc *cf.CloudFormation, input cf.DescribeStacksInput) {
 
 	svc.WaitUntilStackDeleteCompleteWithContext(
 		ctx,

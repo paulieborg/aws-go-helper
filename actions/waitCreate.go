@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func AwsWaitCreateStack(
+func WaitCreate(
 	ctx aws.Context,
 	svc *cf.CloudFormation,
 	stackInfo cf.DescribeStacksInput) {
