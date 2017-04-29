@@ -4,14 +4,16 @@ import (
 	"context"
 	"flag"
 	"fmt"
+
+	"io/ioutil"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
-	"github.com/paulieborg/aws-go-helper/parsers"
+
 	"github.com/paulieborg/aws-go-helper/actions"
 	"github.com/paulieborg/aws-go-helper/helpers"
-	"io/ioutil"
-	"os"
+	"github.com/paulieborg/aws-go-helper/parsers"
 )
 
 var (
@@ -39,8 +41,8 @@ func main() {
 	sess := session.Must(session.NewSession())
 	svc := cf.New(sess)
 
-	if *action == "provision" {
-
+	switch *action {
+	case "provision":
 		err := actions.Provision(ctx, svc, cfParams, *name, string(t), *timeout)
 		helpers.ErrorHandler(err)
 
@@ -49,14 +51,14 @@ func main() {
 
 		fmt.Printf("Stack - %s\n", aws.StringValue(ds.Stacks[0].StackStatus))
 
-	} else if *action == "delete" {
+	case "delete":
 		_, err = actions.Delete(ctx, svc, cf.DeleteStackInput{StackName: name})
 		helpers.ErrorHandler(err)
 
 		actions.WaitDelete(ctx, svc, cf.DescribeStacksInput{StackName: name})
 
-	} else {
-		fmt.Printf("Unknown action '%s'\n", action)
+	default:
+		fmt.Printf("Unknown action '%s'\n", *action)
 	}
 }
 
