@@ -44,7 +44,7 @@ func main() {
 	sess := session.Must(session.NewSession())
 	svc := cf.New(sess)
 
-	if ( *action == "create") {
+	if *action == "create" {
 
 		r, err := actions.Create(ctx, svc, cfParams, *name, string(t), *timeout)
 		if err != nil {
@@ -65,7 +65,7 @@ func main() {
 			fmt.Printf("Stack - %s\n", aws.StringValue(ds.Stacks[0].StackStatus))
 		}
 
-	} else if ( *action == "delete" ) {
+	} else if *action == "delete" {
 		_, err = actions.Delete(ctx, svc, cf.DeleteStackInput{StackName: name})
 		if err != nil {
 			panic(err)
