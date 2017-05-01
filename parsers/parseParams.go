@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"bytes"
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
-	"log"
 )
 
 // parseParams takes a simple JSON blob of parameters and converts it to a slice
@@ -15,7 +14,7 @@ func ParseParams(params []byte) ([]*cf.Parameter) {
 
 	err := json.NewDecoder(bytes.NewReader(params)).Decode(&sp)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	for k, v := range sp {
