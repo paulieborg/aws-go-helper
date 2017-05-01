@@ -12,8 +12,8 @@ import (
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 
 	"github.com/paulieborg/aws-go-helper/actions"
-	"github.com/paulieborg/aws-go-helper/helpers"
 	"github.com/paulieborg/aws-go-helper/parsers"
+	"log"
 )
 
 var (
@@ -33,21 +33,12 @@ var (
 func main() {
 	flag.Parse()
 
-	t, err := readFile(*template)
-	helpers.ErrorHandler(err)
-
-	p, err := readFile(*params)
-	helpers.ErrorHandler(err)
-
-	cfParams, err := parsers.ParseParams(p)
-	helpers.ErrorHandler(err)
-
 	stack := actions.StackArgs{
 		Context:          ctx,
 		Session:          svc,
-		Parameters:       cfParams,
+		Parameters:       parsers.ParseParams(readFile(*params)),
 		Stack_name:       *name,
-		Template:         t,
+		Template:         readFile(*template),
 		TemplateFileName: *template,
 		Bucket:           *bucket,
 		Timeout:          *timeout, }
@@ -57,26 +48,22 @@ func main() {
 		err := stack.Provision()
 
 		if err == nil {
-			ds, _ := stack.Describe()
-			fmt.Printf("Stack - %s\n", aws.StringValue(ds.Stacks[0].StackStatus))
+			fmt.Printf("Stack - %s\n", aws.StringValue(stack.Describe().Stacks[0].StackStatus))
 		} else {
-			helpers.ErrorHandler(err)
+			log.Fatal(err)
 		}
 
 	case "delete":
-		_, err = stack.Delete()
-
-		if err == nil {
-			stack.WaitDelete()
-		} else {
-			helpers.ErrorHandler(err)
-		}
-
+		stack.Delete()
 	default:
 		fmt.Printf("Unknown action '%s'\n", *action)
 	}
 }
 
-func readFile(f string) (t []byte, err error) {
-	return ioutil.ReadFile(f)
+func readFile(f string) ([]byte) {
+	content, err := ioutil.ReadFile(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return content
 }

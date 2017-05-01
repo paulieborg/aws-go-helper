@@ -3,11 +3,14 @@ package actions
 import (
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/paulieborg/aws-go-helper/helpers"
+	"log"
+	"strings"
+	"fmt"
+	"os"
 )
 
 // updateStack attempts to update an existing CloudFormation stack
-func (s *StackArgs) update() (err error) {
+func (s *StackArgs) update() {
 
 	stack := &cf.UpdateStackInput{
 		StackName: aws.String(s.Stack_name),
@@ -20,16 +23,18 @@ func (s *StackArgs) update() (err error) {
 	if s.Bucket == "" {
 		stack.TemplateBody = aws.String(string(s.Template))
 	} else {
-		path, err := s.s3upload()
-		helpers.ErrorHandler(err)
-		stack.TemplateURL = aws.String(path)
+		stack.TemplateURL = aws.String(s.s3upload())
 	}
 
-	_, err = s.Session.UpdateStackWithContext(s.Context, stack)
-	helpers.ErrorHandler(err)
+	_, err := s.Session.UpdateStackWithContext(s.Context, stack)
 
-	s.waitUpdate()
-
-	return
+	if strings.Contains(err.Error(), "ValidationError: No updates are to be performed.") {
+		fmt.Printf("%v\n", err.Error())
+		os.Exit(0)
+	} else if err != nil {
+		log.Fatal(err)
+	} else {
+		s.waitUpdate()
+	}
 
 }

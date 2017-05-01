@@ -6,9 +6,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"bytes"
 	"os"
+	"log"
 )
 
-func (s *StackArgs) s3upload() (string, error) {
+func (s *StackArgs) s3upload() (string) {
 
 	svc := s3.New(session.Must(session.NewSession()))
 
@@ -24,5 +25,9 @@ func (s *StackArgs) s3upload() (string, error) {
 
 	_, err := svc.PutObject(params)
 
-	return path, err
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return path
 }

@@ -3,11 +3,11 @@ package actions
 import (
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/paulieborg/aws-go-helper/helpers"
+	"log"
 )
 
 // createStack attempts to bring up a CloudFormation stack
-func (s *StackArgs) create() (err error) {
+func (s *StackArgs) create() {
 
 	stackInput := &cf.CreateStackInput{
 		StackName: aws.String(s.Stack_name),
@@ -21,14 +21,16 @@ func (s *StackArgs) create() (err error) {
 	if s.Bucket == "" {
 		stackInput.TemplateBody = aws.String(string(s.Template))
 	} else {
-		path, err := s.s3upload()
-		helpers.ErrorHandler(err)
-		stackInput.TemplateURL = aws.String(path)
+		stackInput.TemplateURL = aws.String(s.s3upload())
 	}
 
-	_, err = s.Session.CreateStackWithContext(s.Context, stackInput)
-	helpers.ErrorHandler(err)
+	_, err := s.Session.CreateStackWithContext(s.Context, stackInput)
 
-	s.waitCreate()
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		s.waitCreate()
+	}
+
 	return
 }
