@@ -35,7 +35,7 @@ func TestParseParams(t *testing.T) {
 func TestPanic(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
-			t.Errorf("The code did not panic")
+			t.Error("The code did not panic")
 		}
 	}()
 
