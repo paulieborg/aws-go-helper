@@ -6,11 +6,11 @@ import (
 	"time"
 )
 
-func (p_args *ProvisionArgs) waitCreate() {
-	input := cf.DescribeStacksInput{StackName: &p_args.Stack_name}
+func (s *StackArgs) waitCreate() {
+	input := cf.DescribeStacksInput{StackName: &s.Stack_name}
 
-	p_args.Session.WaitUntilStackCreateCompleteWithContext(
-		p_args.Context,
+	s.Session.WaitUntilStackCreateCompleteWithContext(
+		s.Context,
 		&input,
 		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
 	)

@@ -17,6 +17,11 @@ import (
 )
 
 var (
+	ctx = context.Background()
+	svc = cf.New(session.Must(session.NewSession()))
+)
+
+var (
 	action   = flag.String("a", "create", "create or delete")
 	name     = flag.String("n", "", "Stack name.")
 	template = flag.String("t", "network/test-template.yml", "Template file path.")
@@ -26,8 +31,6 @@ var (
 )
 
 func main() {
-	ctx := context.Background()
-
 	flag.Parse()
 
 	t, err := readFile(*template)
@@ -39,10 +42,7 @@ func main() {
 	cfParams, err := parsers.ParseParams(p)
 	helpers.ErrorHandler(err)
 
-	s := session.Must(session.NewSession())
-	svc := cf.New(s)
-
-	p_args := actions.ProvisionArgs{
+	stack := actions.StackArgs{
 		Context:          ctx,
 		Session:          svc,
 		Parameters:       cfParams,
@@ -54,15 +54,24 @@ func main() {
 
 	switch *action {
 	case "provision":
-		err := p_args.Provision()
-		helpers.ErrorHandler(err)
-		ds, err := p_args.Describe()
-		helpers.ErrorHandler(err)
-		fmt.Printf("Stack - %s\n", aws.StringValue(ds.Stacks[0].StackStatus))
+		err := stack.Provision()
+
+		if err == nil {
+			ds, _ := stack.Describe()
+			fmt.Printf("Stack - %s\n", aws.StringValue(ds.Stacks[0].StackStatus))
+		} else {
+			helpers.ErrorHandler(err)
+		}
+
 	case "delete":
-		_, err = p_args.Delete()
-		helpers.ErrorHandler(err)
-		p_args.WaitDelete()
+		_, err = stack.Delete()
+
+		if err == nil {
+			stack.WaitDelete()
+		} else {
+			helpers.ErrorHandler(err)
+		}
+
 	default:
 		fmt.Printf("Unknown action '%s'\n", *action)
 	}

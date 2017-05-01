@@ -8,22 +8,21 @@ import (
 	"os"
 )
 
-func (p_args *ProvisionArgs) s3upload() (path string, err error) {
+func (s *StackArgs) s3upload() (string, error) {
 
-	s := session.Must(session.NewSession())
-	svc := s3.New(s)
+	svc := s3.New(session.Must(session.NewSession()))
 
 	url := "https://s3-" + os.Getenv("AWS_REGION") + ".amazonaws.com/"
-	file_path := "/cloudformation-templates/" + p_args.Stack_name
-	path = url + p_args.Bucket + file_path
+	file_path := "/cloudformation-templates/" + s.Stack_name
+	path := url + s.Bucket + file_path
 
 	params := &s3.PutObjectInput{
-		Body:   bytes.NewReader([]byte(p_args.Template)),
-		Bucket: &p_args.Bucket,
+		Body:   bytes.NewReader([]byte(s.Template)),
+		Bucket: &s.Bucket,
 		Key:    aws.String(file_path),
 	}
 
-	_, err = svc.PutObject(params)
+	_, err := svc.PutObject(params)
 
-	return
+	return path, err
 }

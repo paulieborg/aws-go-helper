@@ -7,28 +7,28 @@ import (
 )
 
 // updateStack attempts to update an existing CloudFormation stack
-func (p_args *ProvisionArgs) update() (err error) {
+func (s *StackArgs) update() (err error) {
 
 	stack := &cf.UpdateStackInput{
-		StackName: aws.String(p_args.Stack_name),
+		StackName: aws.String(s.Stack_name),
 		Capabilities: []*string{
 			aws.String(capability),
 		},
-		Parameters: p_args.Parameters,
+		Parameters: s.Parameters,
 	}
 
-	if p_args.Bucket == "" {
-		stack.TemplateBody = aws.String(string(p_args.Template))
+	if s.Bucket == "" {
+		stack.TemplateBody = aws.String(string(s.Template))
 	} else {
-		path, err := p_args.s3upload()
+		path, err := s.s3upload()
 		helpers.ErrorHandler(err)
 		stack.TemplateURL = aws.String(path)
 	}
 
-	_, err = p_args.Session.UpdateStackWithContext(p_args.Context, stack)
+	_, err = s.Session.UpdateStackWithContext(s.Context, stack)
 	helpers.ErrorHandler(err)
 
-	p_args.waitUpdate()
+	s.waitUpdate()
 
 	return
 

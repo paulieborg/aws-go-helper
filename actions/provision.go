@@ -8,7 +8,7 @@ import (
 
 var capability string = "CAPABILITY_NAMED_IAM"
 
-type ProvisionArgs struct {
+type StackArgs struct {
 	Context          aws.Context
 	Session          *cf.CloudFormation
 	Parameters       []*cf.Parameter
@@ -20,17 +20,17 @@ type ProvisionArgs struct {
 }
 
 // Provision a CloudFormation stack
-func (p_args *ProvisionArgs) Provision() (err error) {
+func (s *StackArgs) Provision() (err error) {
 
-	if p_args.exists() && p_args.rollback() {
-		p_args.Delete()
+	if s.exists() && s.rollback() {
+		s.Delete()
 		helpers.ErrorHandler(err)
-		p_args.WaitDelete()
-		p_args.create()
-	} else if p_args.exists() {
-		err = p_args.update()
+		s.WaitDelete()
+		s.create()
+	} else if s.exists() {
+		err = s.update()
 	} else {
-		err = p_args.create()
+		err = s.create()
 	}
 
 	return

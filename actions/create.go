@@ -7,28 +7,28 @@ import (
 )
 
 // createStack attempts to bring up a CloudFormation stack
-func (p_args *ProvisionArgs) create() (err error) {
+func (s *StackArgs) create() (err error) {
 
-	stack := &cf.CreateStackInput{
-		StackName: aws.String(p_args.Stack_name),
+	stackInput := &cf.CreateStackInput{
+		StackName: aws.String(s.Stack_name),
 		Capabilities: []*string{
 			aws.String(capability),
 		},
-		Parameters:       p_args.Parameters,
-		TimeoutInMinutes: aws.Int64(p_args.Timeout),
+		Parameters:       s.Parameters,
+		TimeoutInMinutes: aws.Int64(s.Timeout),
 	}
 
-	if p_args.Bucket == "" {
-		stack.TemplateBody = aws.String(string(p_args.Template))
+	if s.Bucket == "" {
+		stackInput.TemplateBody = aws.String(string(s.Template))
 	} else {
-		path, err := p_args.s3upload()
+		path, err := s.s3upload()
 		helpers.ErrorHandler(err)
-		stack.TemplateURL = aws.String(path)
+		stackInput.TemplateURL = aws.String(path)
 	}
 
-	_, err = p_args.Session.CreateStackWithContext(p_args.Context, stack)
+	_, err = s.Session.CreateStackWithContext(s.Context, stackInput)
 	helpers.ErrorHandler(err)
 
-	p_args.waitCreate()
+	s.waitCreate()
 	return
 }

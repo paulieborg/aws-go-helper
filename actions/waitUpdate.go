@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-func (p_args *ProvisionArgs) waitUpdate() {
+func (s *StackArgs) waitUpdate() {
 
-	filter := cf.DescribeStacksInput{StackName: &p_args.Stack_name}
+	filter := cf.DescribeStacksInput{StackName: &s.Stack_name}
 
-	p_args.Session.WaitUntilStackUpdateCompleteWithContext(
-		p_args.Context,
+	s.Session.WaitUntilStackUpdateCompleteWithContext(
+		s.Context,
 		&filter,
 		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
 	)

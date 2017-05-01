@@ -4,6 +4,7 @@ import (
 	"strings"
 	"fmt"
 	"os"
+	"log"
 )
 
 func ErrorHandler(err error) {
@@ -11,16 +12,10 @@ func ErrorHandler(err error) {
 	if err != nil {
 
 		if strings.Contains(err.Error(), "ValidationError: No updates are to be performed.") {
-			fmt.Print("No updates are to be performed.\n")
+			fmt.Printf("%v\n", err.Error())
 			os.Exit(0)
-		} else if strings.Contains(err.Error(), "ExpiredToken: The security token included in the request is expired") {
-			fmt.Print("The security token included in the request is expired.\n")
-			os.Exit(1)
 		} else {
-			fmt.Errorf(err.Error())
-			os.Exit(1)
+			log.Fatal(err)
 		}
 	}
-
-	return
 }

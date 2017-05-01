@@ -4,7 +4,7 @@ import (
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
-func (p_args *ProvisionArgs) Describe() (d *cf.DescribeStacksOutput, err error) {
-	input := cf.DescribeStacksInput{StackName: &p_args.Stack_name}
-	return p_args.Session.DescribeStacksWithContext(p_args.Context, &input)
+func (s *StackArgs) Describe() (*cf.DescribeStacksOutput, error) {
+	input := cf.DescribeStacksInput{StackName: &s.Stack_name}
+	return s.Session.DescribeStacksWithContext(s.Context, &input)
 }
