@@ -15,24 +15,24 @@ func TestParseParams(t *testing.T) {
 
 	var p []*cf.Parameter = ParseParams(params)
 
-	if ! isParameterKeyInList("ParamOne", p) {
+	if ! keyInList("ParamOne", p) {
 		t.Errorf("expected: %s", "ParamOne")
 	}
 
-	if ! isParameterKeyInList("ParamTwo", p) {
+	if ! keyInList("ParamTwo", p) {
 		t.Errorf("expected: %s", "ParamTwo")
 	}
 
-	if ! isParameterValueInList("1", p) {
+	if ! valueInList("1", p) {
 		t.Errorf("expected: %s", "1")
 	}
 
-	if ! isParameterValueInList("2", p) {
+	if ! valueInList("2", p) {
 		t.Errorf("expected: %s", "2")
 	}
 }
 
-func TestPanic(t *testing.T) {
+func TestJsonParserPanic(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
 			t.Error("The code did not panic")
@@ -46,7 +46,7 @@ func TestPanic(t *testing.T) {
 	ParseParams(bad_params)
 }
 
-func isParameterKeyInList(value string, params []*cf.Parameter) bool {
+func keyInList(value string, params []*cf.Parameter) bool {
 
 	for _, v := range params {
 
@@ -57,7 +57,7 @@ func isParameterKeyInList(value string, params []*cf.Parameter) bool {
 	return false
 }
 
-func isParameterValueInList(value string, params []*cf.Parameter) bool {
+func valueInList(value string, params []*cf.Parameter) bool {
 
 	for _, v := range params {
 
