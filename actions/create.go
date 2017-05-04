@@ -3,34 +3,43 @@ package actions
 import (
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/aws"
-	"log"
 )
 
 // createStack attempts to bring up a CloudFormation stack
-func (s *StackArgs) create() {
+func create(stack *StackArgs) (*cf.DescribeStacksOutput, error) {
+
+	var err error = nil
 
 	stackInput := &cf.CreateStackInput{
-		StackName: aws.String(s.Stack_name),
+		StackName: aws.String(stack.Stack_name),
 		Capabilities: []*string{
 			aws.String(capability),
 		},
-		Parameters:       s.Parameters,
-		TimeoutInMinutes: aws.Int64(s.Timeout),
+		Parameters:       stack.Parameters,
+		TimeoutInMinutes: aws.Int64(stack.Timeout),
 	}
 
-	if s.Bucket == "" {
-		stackInput.TemplateBody = aws.String(string(s.Template))
+	if stack.Bucket == "" {
+		stackInput.TemplateBody = aws.String(string(stack.Template))
 	} else {
-		stackInput.TemplateURL = aws.String(s.s3upload())
+		path, err := s3upload(stack)
+		if err != nil {
+			return nil, err
+		}
+		stackInput.TemplateURL = aws.String(path)
 	}
 
-	_, err := s.Session.CreateStackWithContext(s.Context, stackInput)
+	_, err = stack.Session.CreateStackWithContext(stack.Context, stackInput)
 
 	if err != nil {
-		log.Fatal(err)
-	} else {
-		s.waitCreate()
+		return nil, err
 	}
 
-	return
+	err = waitCreate(stack)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return describe(stack), err
 }
