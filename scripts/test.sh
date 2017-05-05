@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e -o pipefail
+
 echo '{
   "VpcID": "vpc-afe650cb",
   "InPort": "80",
