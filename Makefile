@@ -15,3 +15,11 @@ build: glide
 run:
 	#Use defaults -n MyTestStack -t templates/template.yml -p templates/params.json
 	bin/cloudformation -n MyTestStack -a $(ACTION)
+
+unit_test:
+	go test $(shell go list ./... | grep -v /vendor/)
+
+integration_test:
+	scripts/test.sh
+
+test: unit_test integration_test

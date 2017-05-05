@@ -8,6 +8,7 @@ services:
       - ".:/root/src/github.com/paulieborg/aws-go-helper"
     environment:
       GOPATH: /root
+      AWS_REGION: ap-southeast-2
     working_dir: /root/src/github.com/paulieborg/aws-go-helper
 
   build:
@@ -18,11 +19,15 @@ services:
       GOARCH: amd64
     command: make build
 
+  test:
+    extends:
+      service: base
+    command: make test
+
   provision:
     extends:
       service: base
     environment:
-      AWS_REGION: ap-southeast-2
       ACTION: provision
     command: make run
 
@@ -30,6 +35,5 @@ services:
     extends:
       service: base
     environment:
-      AWS_REGION: ap-southeast-2
       ACTION: delete
     command: make run
