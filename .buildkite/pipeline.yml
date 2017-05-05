@@ -1,5 +1,5 @@
 steps:
   - command: 'docker-compose run --rm test'
-    label: ':go: Run RSpecs'
+    label: ':go: Run Tests'
     agents:
       - queue=central-dev

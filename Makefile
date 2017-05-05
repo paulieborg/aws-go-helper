@@ -16,7 +16,7 @@ run:
 	#Use defaults -n MyTestStack -t templates/template.yml -p templates/params.json
 	bin/cloudformation -n MyTestStack -a $(ACTION)
 
-unit_test:
+unit_test: glide
 	go test $(shell go list ./... | grep -v /vendor/)
 
 integration_test:
