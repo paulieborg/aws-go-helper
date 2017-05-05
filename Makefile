@@ -13,5 +13,5 @@ build: glide
 	chmod 755 $(BUILD_DIR) && chmod +x $(BINARY_FILE)
 
 run:
-	#Use defaults -n MyTestStack -t network/template.yml -p network/params.json
+	#Use defaults -n MyTestStack -t templates/template.yml -p templates/params.json
 	bin/cloudformation -n MyTestStack -a $(ACTION)
