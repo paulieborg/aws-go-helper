@@ -11,7 +11,7 @@ import (
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 
 	"github.com/paulieborg/aws-go-helper/actions"
-	"github.com/paulieborg/aws-go-helper/parsers"
+	"github.com/paulieborg/aws-go-helper/parse"
 	"log"
 )
 
@@ -35,11 +35,12 @@ func main() {
 	stack := actions.StackArgs{
 		Context:    ctx,
 		Session:    svc,
-		Parameters: parsers.ParseParams(readFile(*params)),
+		Parameters: parse.Params(readFile(*params)),
 		Stack_name: *name,
 		Template:   readFile(*template),
 		Bucket:     *bucket,
-		Timeout:    *timeout, }
+		Timeout:    *timeout,
+	}
 
 	switch *action {
 	case "provision":

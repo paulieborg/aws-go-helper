@@ -1,4 +1,4 @@
-package parsers
+package parse
 
 import (
 	"encoding/json"
@@ -6,9 +6,9 @@ import (
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
-// parseParams takes a simple JSON blob of parameters and converts it to a slice
+// Params takes a simple JSON blob of parameters and converts it to a slice
 // of CloudFormation parameter structs
-func ParseParams(params []byte) ([]*cf.Parameter) {
+func Params(params []byte) ([]*cf.Parameter) {
 	var sp map[string]string
 	var p []*cf.Parameter
 
