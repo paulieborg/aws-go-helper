@@ -22,4 +22,4 @@ unit_test: glide
 integration_test:
 	scripts/test.sh
 
-test: unit_test integration_test
+test: unit_test
