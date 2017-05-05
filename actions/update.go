@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/aws"
 	"log"
@@ -12,8 +11,6 @@ import (
 
 // updateStack attempts to update an existing CloudFormation stack
 func (c *Context) update(p ProvisionArgs) {
-
-	sess := cf.New(session.Must(session.NewSession()))
 
 	stack := &cf.UpdateStackInput{
 		StackName: aws.String(p.Stack_name),
@@ -29,11 +26,11 @@ func (c *Context) update(p ProvisionArgs) {
 		stack.TemplateURL = aws.String(c.s3upload(p))
 	}
 
-	_, err := sess.UpdateStackWithContext(c.Context, stack)
+	_, err := c.Service.UpdateStackWithContext(c.Context, stack)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "ValidationError: No updates are to be performed.") {
-			fmt.Printf("%v\n", err.Error())
+			fmt.Println("No updates are to be performed.")
 			os.Exit(0)
 		} else {
 			log.Fatal(err)

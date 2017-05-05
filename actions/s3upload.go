@@ -4,6 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"bytes"
 	"os"
 	"log"
@@ -17,10 +18,17 @@ func (c *Context) s3upload(p ProvisionArgs) (string) {
 	file_path := "/cloudformation-templates/" + p.Stack_name
 	path := url + p.BucketName + file_path
 
+	UploadTemplate(svc, p.Template, &p.BucketName, path)
+
+	return path
+}
+
+func UploadTemplate(svc s3iface.S3API, template []byte, bucketName *string, path string) {
+
 	params := &s3.PutObjectInput{
-		Body:   bytes.NewReader([]byte(p.Template)),
-		Bucket: &p.BucketName,
-		Key:    aws.String(file_path),
+		Body:   bytes.NewReader([]byte(template)),
+		Bucket: bucketName,
+		Key:    aws.String(path),
 	}
 
 	_, err := svc.PutObject(params)
@@ -28,6 +36,4 @@ func (c *Context) s3upload(p ProvisionArgs) (string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	return path
 }

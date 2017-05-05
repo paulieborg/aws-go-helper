@@ -3,12 +3,14 @@ package actions
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
+	cfapi "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 )
 
 var capability string = "CAPABILITY_NAMED_IAM"
 
 type Context struct {
 	Context aws.Context
+	Service cfapi.CloudFormationAPI
 }
 
 type ProvisionArgs struct {

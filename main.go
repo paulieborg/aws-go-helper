@@ -1,6 +1,9 @@
 package main
 
 import (
+	"github.com/aws/aws-sdk-go/aws/session"
+	cf "github.com/aws/aws-sdk-go/service/cloudformation"
+
 	"context"
 	"flag"
 	"fmt"
@@ -14,6 +17,7 @@ import (
 
 var (
 	ctx = context.Background()
+	svc = cf.New(session.Must(session.NewSession()))
 )
 
 var (
@@ -30,6 +34,7 @@ func main() {
 
 	c := actions.Context{
 		Context: ctx,
+		Service: svc,
 	}
 
 	args := actions.ProvisionArgs{
@@ -46,6 +51,7 @@ func main() {
 		fmt.Printf("Stack - %s\n", status)
 	case "delete":
 		c.Delete(name)
+		fmt.Println("Stack - DELETE_COMPLETE")
 	default:
 		fmt.Printf("Unknown action '%s'\n", *action)
 	}

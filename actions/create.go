@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/aws"
 	"log"
@@ -9,8 +8,6 @@ import (
 
 // createStack attempts to bring up a CloudFormation stack
 func (c *Context) create(p ProvisionArgs) {
-
-	sess := cf.New(session.Must(session.NewSession()))
 
 	stackInput := &cf.CreateStackInput{
 		StackName: aws.String(p.Stack_name),
@@ -27,7 +24,7 @@ func (c *Context) create(p ProvisionArgs) {
 		stackInput.TemplateURL = aws.String(c.s3upload(p))
 	}
 
-	_, err := sess.CreateStackWithContext(c.Context, stackInput)
+	_, err := c.Service.CreateStackWithContext(c.Context, stackInput)
 
 	if err != nil {
 		log.Fatal(err)
