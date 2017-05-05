@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"github.com/aws/aws-sdk-go/aws/session"
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/aws"
 	"log"
@@ -10,31 +11,35 @@ import (
 )
 
 // updateStack attempts to update an existing CloudFormation stack
-func (s *StackArgs) update() {
+func (s *Stack) update(p ProvisionArgs) {
+
+	sess := cf.New(session.Must(session.NewSession()))
 
 	stack := &cf.UpdateStackInput{
-		StackName: aws.String(s.Stack_name),
+		StackName: aws.String(p.Stack_name),
 		Capabilities: []*string{
 			aws.String(capability),
 		},
-		Parameters: s.Parameters,
+		Parameters: p.Parameters,
 	}
 
-	if s.Bucket == "" {
-		stack.TemplateBody = aws.String(string(s.Template))
+	if p.BucketName == "" {
+		stack.TemplateBody = aws.String(string(p.Template))
 	} else {
-		stack.TemplateURL = aws.String(s.s3upload())
+		stack.TemplateURL = aws.String(s.s3upload(p))
 	}
 
-	_, err := s.Session.UpdateStackWithContext(s.Context, stack)
+	_, err := sess.UpdateStackWithContext(s.Context, stack)
 
-	if strings.Contains(err.Error(), "ValidationError: No updates are to be performed.") {
-		fmt.Printf("%v\n", err.Error())
-		os.Exit(0)
-	} else if err != nil {
-		log.Fatal(err)
-	} else {
-		s.waitUpdate()
+	if err != nil {
+		if strings.Contains(err.Error(), "ValidationError: No updates are to be performed.") {
+			fmt.Printf("%v\n", err.Error())
+			os.Exit(0)
+		} else {
+			log.Fatal(err)
+		}
 	}
+
+	s.waitUpdate(p)
 
 }

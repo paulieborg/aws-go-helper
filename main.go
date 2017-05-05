@@ -7,10 +7,6 @@ import (
 
 	"io/ioutil"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
-
 	"github.com/paulieborg/aws-go-helper/actions"
 	"github.com/paulieborg/aws-go-helper/parse"
 	"log"
@@ -18,14 +14,13 @@ import (
 
 var (
 	ctx = context.Background()
-	svc = cf.New(session.Must(session.NewSession()))
 )
 
 var (
 	action   = flag.String("a", "create", "create or delete")
 	name     = flag.String("n", "", "Stack name.")
-	template = flag.String("t", "network/test-template.yml", "Template file path.")
-	params   = flag.String("p", "network/test-params.json", "Parameters file path.")
+	template = flag.String("t", "templates/test-template.yml", "Template file path.")
+	params   = flag.String("p", "templates/test-params.json", "Parameters file path.")
 	bucket   = flag.String("b", "", "Bucket containing template.")
 	timeout  = flag.Int64("x", 5, "Timeout in minutes.")
 )
@@ -33,28 +28,24 @@ var (
 func main() {
 	flag.Parse()
 
-	stack := actions.StackArgs{
-		Context:    ctx,
-		Session:    svc,
-		Parameters: parse.Params(readFile(*params)),
+	c := actions.Stack{
+		Context: ctx,
+	}
+
+	args := actions.ProvisionArgs{
 		Stack_name: *name,
+		Parameters: parse.Params(readFile(*params)),
 		Template:   readFile(*template),
-		Bucket:     *bucket,
+		BucketName: *bucket,
 		Timeout:    *timeout,
 	}
 
 	switch *action {
 	case "provision":
-		err := stack.Provision()
-
-		if err == nil {
-			fmt.Printf("Stack - %s\n", aws.StringValue(stack.Describe().Stacks[0].StackStatus))
-		} else {
-			log.Fatal(err)
-		}
-
+		status := c.Provision(args)
+		fmt.Printf("Stack - %s\n", status)
 	case "delete":
-		stack.Delete()
+		c.Delete(name)
 	default:
 		fmt.Printf("Unknown action '%s'\n", *action)
 	}
