@@ -1,29 +1,41 @@
 Description: >
-  This template creates a VPC, with a 3 Subnet Types
-  (Public, App and Data) across 3 Availability Zones.
+  This template is only a Test. You can safely Delete Me
 
 Parameters:
 
-  EnvironmentName:
-    Description: The name to associate rescoures with
+  VpcID:
+    Description: The ID of the VPC
     Type: String
 
-  VpcCIDR:
-    Description: Please enter the IP CIDR range
+  InPort:
+    Description: The Ingress Port Number to Add
+    Type: String
+
+  OutPort:
+    Description: The Egress Port Number to Add
     Type: String
 
 Resources:
 
-  VPC:
-    Type: AWS::EC2::VPC
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
     Properties:
-      CidrBlock: !Ref VpcCIDR
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName}-vpc
+      GroupDescription: Allow http to client host
+      VpcId:
+        Ref: VpcID
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: !Ref InPort
+        ToPort: !Ref InPort
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: !Ref OutPort
+        ToPort: !Ref OutPort
+        CidrIp: 0.0.0.0/0
 
 Outputs:
 
-  VPC:
-    Description: A reference to the created VPC
-    Value: !Ref VPC
+  SecurityGroupID:
+    Description: A Security Group ID
+    Value: !Ref InstanceSecurityGroup

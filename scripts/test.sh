@@ -1,11 +1,17 @@
 #!/bin/bash
 
-go run main.go -n MyTestStack -a provision -b essentials-tf-state
-go run main.go -n MyTestStack -a provision -b essentials-tf-state
+echo '{
+  "VpcID": "vpc-afe650cb",
+  "InPort": "80",
+  "OutPort": "80"
+}' > templates/test-params.json
 
-sed -i '' 's#10.0.0.0/16#10.1.0.0/16#' templates/test-params.json
+go run main.go -n MyTestStack -a provision -b myob-dont-panic-test
+go run main.go -n MyTestStack -a provision -b myob-dont-panic-test
 
-go run main.go -n MyTestStack -a provision -b essentials-tf-state
+sed -i '' 's#80#443#' templates/test-params.json
+
+go run main.go -n MyTestStack -a provision -b myob-dont-panic-test
 go run main.go -n MyTestStack -a delete
 
-git checkout -- templates/test-params.json
+rm templates/test-params.json

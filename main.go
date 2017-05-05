@@ -17,7 +17,7 @@ var (
 )
 
 var (
-	action   = flag.String("a", "create", "create or delete")
+	action   = flag.String("a", "provision", "create or delete")
 	name     = flag.String("n", "", "Stack name.")
 	template = flag.String("t", "templates/test-template.yml", "Template file path.")
 	params   = flag.String("p", "templates/test-params.json", "Parameters file path.")

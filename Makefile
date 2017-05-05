@@ -13,8 +13,8 @@ build: glide
 	chmod 755 $(BUILD_DIR) && chmod +x $(BINARY_FILE)
 
 run:
-	#Use defaults -n MyTestStack -t templates/template.yml -p templates/params.json
-	bin/cloudformation -n MyTestStack -a $(ACTION)
+	#Use defaults -n MyTestStack -t templates/test-template.yml -p templates/test-params.json
+	bin/cloudformation -a $(ACTION) -n MyTestStack -t templates/test-template.yml -p test-params.json -b myob-dont-panic-test
 
 unit_test: glide
 	go test $(shell go list ./... | grep -v /vendor/)
@@ -22,4 +22,4 @@ unit_test: glide
 integration_test:
 	scripts/test.sh
 
-test: unit_test
+test: unit_test integration_test
