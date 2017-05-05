@@ -6,12 +6,15 @@ import (
 	"time"
 )
 
-func waitDelete(stack *StackArgs) error {
-	input := cf.DescribeStacksInput{StackName: &stack.Stack_name}
+func (s *StackArgs) waitDelete() {
 
-	return stack.Session.WaitUntilStackDeleteCompleteWithContext(
-		stack.Context,
+	input := cf.DescribeStacksInput{StackName: &s.Stack_name}
+
+	s.Session.WaitUntilStackDeleteCompleteWithContext(
+		s.Context,
 		&input,
 		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
 	)
+
+	return
 }

@@ -6,12 +6,14 @@ import (
 	"time"
 )
 
-func waitCreate(stack *StackArgs) error {
-	input := cf.DescribeStacksInput{StackName: &stack.Stack_name}
+func (s *StackArgs) waitCreate() {
+	input := cf.DescribeStacksInput{StackName: &s.Stack_name}
 
-	return stack.Session.WaitUntilStackCreateCompleteWithContext(
-		stack.Context,
+	s.Session.WaitUntilStackCreateCompleteWithContext(
+		s.Context,
 		&input,
 		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
 	)
+
+	return
 }

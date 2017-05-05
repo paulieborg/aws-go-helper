@@ -5,15 +5,14 @@ import (
 	"log"
 )
 
-func Delete(stack *StackArgs) error {
+func (s *StackArgs) Delete() {
 
-	input := cf.DeleteStackInput{StackName: &stack.Stack_name}
-	_, err := stack.Session.DeleteStackWithContext(stack.Context, &input)
+	input := cf.DeleteStackInput{StackName: &s.Stack_name}
+	_, err := s.Session.DeleteStackWithContext(s.Context, &input)
 
 	if err != nil {
 		log.Fatal(err)
 	} else {
-		err = waitDelete(stack)
+		s.waitDelete()
 	}
-	return err
 }

@@ -7,6 +7,7 @@ import (
 
 	"io/ioutil"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 
@@ -44,12 +45,16 @@ func main() {
 
 	switch *action {
 	case "provision":
-		d := actions.Provision(&stack)
-		fmt.Printf("Stack - %s\n", *d)
+		err := stack.Provision()
+
+		if err == nil {
+			fmt.Printf("Stack - %s\n", aws.StringValue(stack.Describe().Stacks[0].StackStatus))
+		} else {
+			log.Fatal(err)
+		}
 
 	case "delete":
-		actions.Delete(&stack)
-		fmt.Println("Stack - Deleted")
+		stack.Delete()
 	default:
 		fmt.Printf("Unknown action '%s'\n", *action)
 	}

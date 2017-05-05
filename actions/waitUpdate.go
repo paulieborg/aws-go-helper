@@ -6,12 +6,15 @@ import (
 	"time"
 )
 
-func waitUpdate(stack *StackArgs) error {
-	input := cf.DescribeStacksInput{StackName: &stack.Stack_name}
+func (s *StackArgs) waitUpdate() {
 
-	return stack.Session.WaitUntilStackUpdateCompleteWithContext(
-		stack.Context,
-		&input,
+	filter := cf.DescribeStacksInput{StackName: &s.Stack_name}
+
+	s.Session.WaitUntilStackUpdateCompleteWithContext(
+		s.Context,
+		&filter,
 		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
 	)
+
+	return
 }
