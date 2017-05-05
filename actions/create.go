@@ -8,7 +8,7 @@ import (
 )
 
 // createStack attempts to bring up a CloudFormation stack
-func (s *Stack) create(p ProvisionArgs) {
+func (c *Context) create(p ProvisionArgs) {
 
 	sess := cf.New(session.Must(session.NewSession()))
 
@@ -24,15 +24,15 @@ func (s *Stack) create(p ProvisionArgs) {
 	if p.BucketName == "" {
 		stackInput.TemplateBody = aws.String(string(p.Template))
 	} else {
-		stackInput.TemplateURL = aws.String(s.s3upload(p))
+		stackInput.TemplateURL = aws.String(c.s3upload(p))
 	}
 
-	_, err := sess.CreateStackWithContext(s.Context, stackInput)
+	_, err := sess.CreateStackWithContext(c.Context, stackInput)
 
 	if err != nil {
 		log.Fatal(err)
 	} else {
-		s.waitCreate(p)
+		c.waitCreate(p)
 	}
 
 	return

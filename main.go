@@ -28,7 +28,7 @@ var (
 func main() {
 	flag.Parse()
 
-	c := actions.Stack{
+	c := actions.Context{
 		Context: ctx,
 	}
 

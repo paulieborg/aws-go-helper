@@ -6,16 +6,16 @@ import (
 	"log"
 )
 
-func (s *Stack) Delete(stack_name *string) {
+func (c *Context) Delete(stack_name *string) {
 
 	sess := cf.New(session.Must(session.NewSession()))
 
 	input := cf.DeleteStackInput{StackName: stack_name}
-	_, err := sess.DeleteStackWithContext(s.Context, &input)
+	_, err := sess.DeleteStackWithContext(c.Context, &input)
 
 	if err != nil {
 		log.Fatal(err)
 	} else {
-		s.waitDelete(stack_name)
+		c.waitDelete(stack_name)
 	}
 }

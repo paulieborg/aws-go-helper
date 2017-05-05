@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-func (s *Stack) waitCreate(p ProvisionArgs) {
+func (c *Context) waitCreate(p ProvisionArgs) {
 
 	sess := cf.New(session.Must(session.NewSession()))
 	input := cf.DescribeStacksInput{StackName: &p.Stack_name}
 
 	sess.WaitUntilStackCreateCompleteWithContext(
-		s.Context,
+		c.Context,
 		&input,
 		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
 	)

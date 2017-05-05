@@ -7,16 +7,15 @@ import (
 	"time"
 )
 
-func (s *Stack) waitDelete(stack_name *string) {
+func (c *Context) waitDelete(stack_name *string) {
 
 	sess := cf.New(session.Must(session.NewSession()))
 	input := cf.DescribeStacksInput{StackName: stack_name}
 
 	sess.WaitUntilStackDeleteCompleteWithContext(
-		s.Context,
+		c.Context,
 		&input,
 		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
 	)
-
 	return
 }

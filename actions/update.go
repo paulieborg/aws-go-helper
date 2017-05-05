@@ -11,7 +11,7 @@ import (
 )
 
 // updateStack attempts to update an existing CloudFormation stack
-func (s *Stack) update(p ProvisionArgs) {
+func (c *Context) update(p ProvisionArgs) {
 
 	sess := cf.New(session.Must(session.NewSession()))
 
@@ -26,10 +26,10 @@ func (s *Stack) update(p ProvisionArgs) {
 	if p.BucketName == "" {
 		stack.TemplateBody = aws.String(string(p.Template))
 	} else {
-		stack.TemplateURL = aws.String(s.s3upload(p))
+		stack.TemplateURL = aws.String(c.s3upload(p))
 	}
 
-	_, err := sess.UpdateStackWithContext(s.Context, stack)
+	_, err := sess.UpdateStackWithContext(c.Context, stack)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "ValidationError: No updates are to be performed.") {
@@ -40,6 +40,6 @@ func (s *Stack) update(p ProvisionArgs) {
 		}
 	}
 
-	s.waitUpdate(p)
+	c.waitUpdate(p)
 
 }
