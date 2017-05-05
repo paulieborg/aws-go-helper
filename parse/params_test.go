@@ -1,11 +1,11 @@
-package parsers
+package parse
 
 import (
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"testing"
 )
 
-func TestParseParams(t *testing.T) {
+func TestParams(t *testing.T) {
 
 	params := []byte(`
 		{
@@ -13,7 +13,7 @@ func TestParseParams(t *testing.T) {
 			"ParamTwo": "2"
 		}`)
 
-	var p []*cf.Parameter = ParseParams(params)
+	var p []*cf.Parameter = Params(params)
 
 	if ! keyInList("ParamOne", p) {
 		t.Errorf("expected: %s", "ParamOne")
@@ -43,7 +43,7 @@ func TestJsonParserPanic(t *testing.T) {
 			"I suck and JSON format"
 		`)
 
-	ParseParams(bad_params)
+	Params(bad_params)
 }
 
 func keyInList(value string, params []*cf.Parameter) bool {
