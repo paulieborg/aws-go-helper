@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (c *Context) waitCreate(p ProvisionArgs) {
+func (c *CF) waitCreate(p ProvisionArgs) {
 
 	input := cf.DescribeStacksInput{StackName: &p.Stack_name}
 

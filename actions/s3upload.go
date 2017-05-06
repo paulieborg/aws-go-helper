@@ -10,7 +10,7 @@ import (
 	"log"
 )
 
-func (c *Context) s3upload(p ProvisionArgs) (string) {
+func (c *CF) s3upload(p ProvisionArgs) (string) {
 
 	svc := s3.New(session.Must(session.NewSession()))
 

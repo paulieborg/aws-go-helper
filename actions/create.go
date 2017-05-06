@@ -7,7 +7,9 @@ import (
 )
 
 // createStack attempts to bring up a CloudFormation stack
-func (c *Context) create(p ProvisionArgs) {
+func (c *CF) create(p ProvisionArgs) (*string) {
+
+	sp := StackInfo(c)
 
 	stackInput := &cf.CreateStackInput{
 		StackName: aws.String(p.Stack_name),
@@ -32,5 +34,5 @@ func (c *Context) create(p ProvisionArgs) {
 		c.waitCreate(p)
 	}
 
-	return
+	return sp.describe(&p.Stack_name).Stacks[0].StackStatus
 }

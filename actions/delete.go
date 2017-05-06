@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func (c *Context) Delete(stack_name *string) {
+func (c *CF) Delete(stack_name *string) {
 
 	input := cf.DeleteStackInput{StackName: stack_name}
 	_, err := c.Service.DeleteStackWithContext(c.Context, &input)

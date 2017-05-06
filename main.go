@@ -32,7 +32,7 @@ var (
 func main() {
 	flag.Parse()
 
-	c := actions.Context{
+	c := actions.CF{
 		Context: ctx,
 		Service: svc,
 	}

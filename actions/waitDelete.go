@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (c *Context) waitDelete(stack_name *string) {
+func (c *CF) waitDelete(stack_name *string) {
 
 	input := cf.DescribeStacksInput{StackName: stack_name}
 

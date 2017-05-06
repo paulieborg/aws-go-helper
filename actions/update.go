@@ -10,7 +10,9 @@ import (
 )
 
 // updateStack attempts to update an existing CloudFormation stack
-func (c *Context) update(p ProvisionArgs) {
+func (c *CF) update(p ProvisionArgs) (*string) {
+
+	sp := StackInfo(c)
 
 	stack := &cf.UpdateStackInput{
 		StackName: aws.String(p.Stack_name),
@@ -38,5 +40,7 @@ func (c *Context) update(p ProvisionArgs) {
 	}
 
 	c.waitUpdate(p)
+
+	return sp.describe(&p.Stack_name).Stacks[0].StackStatus
 
 }

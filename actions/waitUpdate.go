@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (c *Context) waitUpdate(p ProvisionArgs) {
+func (c *CF) waitUpdate(p ProvisionArgs) {
 
 	filter := cf.DescribeStacksInput{StackName: &p.Stack_name}
 
