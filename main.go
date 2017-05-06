@@ -1,18 +1,18 @@
 package main
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
-
 	"context"
 	"flag"
 	"fmt"
+	"log"
 
 	"io/ioutil"
 
+	"github.com/aws/aws-sdk-go/aws/session"
+	cf "github.com/aws/aws-sdk-go/service/cloudformation"
+
 	"github.com/paulieborg/aws-go-helper/actions"
 	"github.com/paulieborg/aws-go-helper/parse"
-	"log"
 	"github.com/paulieborg/aws-go-helper/stack"
 )
 
@@ -29,13 +29,13 @@ func main() {
 	flag.Parse()
 
 	var (
-		stack_service = stack.StackService{
+		svc = stack.Service{
 			Context: context.Background(),
-			Service: cf.New(session.Must(session.NewSession())),
+			CFAPI: cf.New(session.Must(session.NewSession())),
 		}
 
-		stack_config = stack.StackConfig{
-			Stack_name: *name,
+		cfg = stack.Config{
+			StackName: *name,
 			Parameters: parse.Params(readFile(*params)),
 			Template:   readFile(*template),
 			BucketName: *bucket,
@@ -45,10 +45,10 @@ func main() {
 
 	switch *action {
 	case "provision":
-		status := actions.Provision(stack_service, stack_config)
+		status := actions.Provision(svc, cfg)
 		fmt.Printf("Stack - %s\n", *status)
 	case "delete":
-		actions.Delete(stack_service, stack_config)
+		actions.Delete(svc, cfg)
 		fmt.Println("Stack - DELETE_COMPLETE")
 	default:
 		fmt.Printf("Unknown action '%s'\n", *action)

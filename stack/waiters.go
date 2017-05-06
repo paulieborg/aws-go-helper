@@ -1,9 +1,10 @@
 package stack
 
 import (
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws/request"
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
-	"time"
 )
 
 type StackWaiterProvider interface {
@@ -12,45 +13,39 @@ type StackWaiterProvider interface {
 	WaitUpdate(*string)
 }
 
-func StackWaiter(ss *StackService) StackWaiterProvider {
-	return &StackService{
-		ss.Context,
-		ss.Service,
+func StackWaiter(s *Service) StackWaiterProvider {
+	return &Service{
+		s.Context,
+		s.CFAPI,
 	}
 }
 
-func (s *StackService) WaitCreate(stack_name *string) {
+func (s *Service) WaitCreate(n *string) {
+	in := cf.DescribeStacksInput{StackName: n}
 
-	input := cf.DescribeStacksInput{StackName: stack_name}
-
-	s.Service.WaitUntilStackCreateCompleteWithContext(
+	s.CFAPI.WaitUntilStackCreateCompleteWithContext(
 		s.Context,
-		&input,
-		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
+		&in,
+		request.WithWaiterDelay(request.ConstantWaiterDelay(15 * time.Second)),
 	)
-	return
 }
 
-func (s *StackService) WaitDelete(stack_name *string) {
+func (s *Service) WaitDelete(n *string) {
+	in := cf.DescribeStacksInput{StackName: n}
 
-	input := cf.DescribeStacksInput{StackName: stack_name}
-
-	s.Service.WaitUntilStackDeleteCompleteWithContext(
+	s.CFAPI.WaitUntilStackDeleteCompleteWithContext(
 		s.Context,
-		&input,
-		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
+		&in,
+		request.WithWaiterDelay(request.ConstantWaiterDelay(15 * time.Second)),
 	)
-	return
 }
 
-func (s *StackService) WaitUpdate(stack_name *string) {
+func (s *Service) WaitUpdate(n *string) {
+	flt := cf.DescribeStacksInput{StackName: n}
 
-	filter := cf.DescribeStacksInput{StackName: stack_name}
-
-	s.Service.WaitUntilStackUpdateCompleteWithContext(
+	s.CFAPI.WaitUntilStackUpdateCompleteWithContext(
 		s.Context,
-		&filter,
-		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
+		&flt,
+		request.WithWaiterDelay(request.ConstantWaiterDelay(15 * time.Second)),
 	)
-	return
 }

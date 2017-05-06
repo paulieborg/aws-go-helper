@@ -1,45 +1,49 @@
 package s3
 
 import (
+	"bytes"
+	"fmt"
+	"os"
+	"log"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
-	"bytes"
-	"os"
-	"log"
 )
 
-type BucketFactory struct {
-	Stack_name string
+// CFBucket is an S3 bucket which contains a CloudFormation template.
+type CFBucket struct {
+	StackName  string
 	Template   []byte
 	BucketName string
+	URL        string
 }
 
-func S3upload(p BucketFactory) (string) {
+// Upload sends a CFBucket to S3 and returns its URL.
+func Upload(b CFBucket) (u string) {
+    svc := s3.New(session.Must(session.NewSession()))
+    region := os.Getenv("AWS_REGION")  // TODO brittle
+    u = fmt.Sprintf("https://s3-%s.amazonaws.com", region)
+    u = fmt.Sprintf("%s/cloudformation-templates/%s", u, b.StackName)
 
-	svc := s3.New(session.Must(session.NewSession()))
+    b.URL = u
+    err := uploadTemplate(svc, b)
+    if err != nil {
+        log.Fatal(err)
+    }
 
-	url := "https://s3-" + os.Getenv("AWS_REGION") + ".amazonaws.com/"
-	file_path := "/cloudformation-templates/" + p.Stack_name
-	path := url + p.BucketName + file_path
-
-	UploadTemplate(svc, p.Template, &p.BucketName, path)
-
-	return path
+    return
 }
 
-func UploadTemplate(svc s3iface.S3API, template []byte, bucketName *string, path string) {
+func uploadTemplate(svc s3iface.S3API, b CFBucket) (err error) {
+    p := &s3.PutObjectInput{
+        Body: bytes.NewReader(b.Template),
+        Bucket: &b.BucketName,
+        Key: aws.String(b.URL),
+    }
 
-	params := &s3.PutObjectInput{
-		Body:   bytes.NewReader([]byte(template)),
-		Bucket: bucketName,
-		Key:    aws.String(path),
-	}
+    _, err = svc.PutObject(p)
 
-	_, err := svc.PutObject(params)
-
-	if err != nil {
-		log.Fatal(err)
-	}
+    return
 }

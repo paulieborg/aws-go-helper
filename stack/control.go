@@ -2,100 +2,98 @@ package stack
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
+	cf    "github.com/aws/aws-sdk-go/service/cloudformation"
 	cfapi "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
+
 	"github.com/paulieborg/aws-go-helper/s3"
 )
 
-var capability string = "CAPABILITY_NAMED_IAM"
+const capability string = "CAPABILITY_NAMED_IAM"
 
-type StackService struct {
+// Service is ...
+type Service struct {
 	Context aws.Context
-	Service cfapi.CloudFormationAPI
+	CFAPI   cfapi.CloudFormationAPI
 }
 
-type StackConfig struct {
-	Stack_name string
+// Config represents a stack
+type Config struct {
+	StackName  string
 	Parameters []*cf.Parameter
 	Template   []byte
 	BucketName string
 	Timeout    int64
 }
 
-type StackControlProvider interface {
-	Create(*StackConfig) (*cf.CreateStackOutput, error)
-	Update(*StackConfig) (*cf.UpdateStackOutput, error)
+// ControlProvider is ...
+type ControlProvider interface {
+	Create(*Config) (*cf.CreateStackOutput, error)
+	Update(*Config) (*cf.UpdateStackOutput, error)
 	Delete(*string) (*cf.DeleteStackOutput, error)
 }
 
-func StackController(ss *StackService) StackControlProvider {
-
-	service := StackService{
-		ss.Context,
-		ss.Service,
+// Controller is ...
+func Controller(svc *Service) ControlProvider {
+    return &Service{
+		svc.Context,
+		svc.CFAPI,
 	}
-
-	return &service
 }
 
-func (s *StackService) Create(p *StackConfig) (*cf.CreateStackOutput, error) {
+// Create does ...
+func (svc *Service) Create(cfg *Config) (*cf.CreateStackOutput, error) {
+	si := &cf.CreateStackInput{
+		StackName:        aws.String(cfg.StackName),
+		Capabilities:     []*string{
+			aws.String(capability),
+		},
+		Parameters:       cfg.Parameters,
+		TimeoutInMinutes: aws.Int64(cfg.Timeout),
+	}
 
-	stackInput := &cf.CreateStackInput{
-		StackName: aws.String(p.Stack_name),
+	if cfg.BucketName == "" {
+		si.TemplateBody = aws.String(string(cfg.Template))
+	} else {
+		b := s3.CFBucket{
+			StackName:  cfg.StackName,
+			Template:   cfg.Template,
+			BucketName: cfg.BucketName,
+		}
+		si.TemplateURL = aws.String(s3.Upload(b))
+	}
+
+	return svc.CFAPI.CreateStackWithContext(svc.Context, si)
+
+}
+
+// Update does  ...
+func (svc *Service) Update(cfg *Config) (*cf.UpdateStackOutput, error) {
+	si := &cf.UpdateStackInput{
+		StackName:    aws.String(cfg.StackName),
 		Capabilities: []*string{
 			aws.String(capability),
 		},
-		Parameters:       p.Parameters,
-		TimeoutInMinutes: aws.Int64(p.Timeout),
+		Parameters:   cfg.Parameters,
 	}
 
-	if p.BucketName == "" {
-		stackInput.TemplateBody = aws.String(string(p.Template))
+	if cfg.BucketName == "" {
+		si.TemplateBody = aws.String(string(cfg.Template))
 	} else {
-
-		b := s3.BucketFactory{
-			Stack_name: p.Stack_name,
-			Template:   p.Template,
-			BucketName: p.BucketName,
+		b := s3.CFBucket{
+			StackName:  cfg.StackName,
+			Template:   cfg.Template,
+			BucketName: cfg.BucketName,
 		}
-
-		stackInput.TemplateURL = aws.String(s3.S3upload(b))
+		si.TemplateURL = aws.String(s3.Upload(b))
 	}
 
-	return s.Service.CreateStackWithContext(s.Context, stackInput)
+	return svc.CFAPI.UpdateStackWithContext(svc.Context, si)
 
 }
 
-func (s *StackService) Update(p *StackConfig) (*cf.UpdateStackOutput, error) {
-
-	stack := &cf.UpdateStackInput{
-		StackName: aws.String(p.Stack_name),
-		Capabilities: []*string{
-			aws.String(capability),
-		},
-		Parameters: p.Parameters,
-	}
-
-	if p.BucketName == "" {
-		stack.TemplateBody = aws.String(string(p.Template))
-	} else {
-
-		b := s3.BucketFactory{
-			Stack_name: p.Stack_name,
-			Template:   p.Template,
-			BucketName: p.BucketName,
-		}
-
-		stack.TemplateURL = aws.String(s3.S3upload(b))
-	}
-
-	return s.Service.UpdateStackWithContext(s.Context, stack)
-
-}
-
-func (s *StackService) Delete(stack_name *string) (*cf.DeleteStackOutput, error) {
-
-	input := cf.DeleteStackInput{StackName: stack_name}
-	return s.Service.DeleteStackWithContext(s.Context, &input)
+// Delete does ...
+func (svc *Service) Delete(n *string) (*cf.DeleteStackOutput, error) {
+	si := cf.DeleteStackInput{StackName: n}
+	return svc.CFAPI.DeleteStackWithContext(svc.Context, &si)
 
 }
