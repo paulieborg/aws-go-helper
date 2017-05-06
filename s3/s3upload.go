@@ -1,4 +1,4 @@
-package actions
+package s3
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,7 +10,13 @@ import (
 	"log"
 )
 
-func (c *CF) s3upload(p ProvisionArgs) (string) {
+type BucketFactory struct {
+	Stack_name string
+	Template   []byte
+	BucketName string
+}
+
+func S3upload(p BucketFactory) (string) {
 
 	svc := s3.New(session.Must(session.NewSession()))
 

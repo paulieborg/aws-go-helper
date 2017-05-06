@@ -1,41 +1,54 @@
 package actions
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
-	cfapi "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
+	"github.com/paulieborg/aws-go-helper/stack"
+	"strings"
+	"fmt"
+	"os"
+	"log"
 )
 
-var capability string = "CAPABILITY_NAMED_IAM"
-
-type CF struct {
-	Context aws.Context
-	Service cfapi.CloudFormationAPI
-}
-
-type ProvisionArgs struct {
-	Stack_name string
-	Parameters []*cf.Parameter
-	Template   []byte
-	BucketName string
-	Timeout    int64
-}
-
 // Provision a CloudFormation stack
-func (c *CF) Provision(p ProvisionArgs) (string) {
+func Provision(service stack.StackService, config stack.StackConfig) (*string) {
 
-	sp := StackInfo(c)
+	si := stack.StackInfo(&service)
+	sp := stack.StackController(&service)
+	sw := stack.StackWaiter(&service)
 
-	var status string
+	if si.Exists(&config.Stack_name) && si.Rollback(&config.Stack_name) {
+		sp.Delete(&config.Stack_name)
+		_, err := sp.Create(&config)
 
-	if sp.exists(&p.Stack_name) && sp.rollback(&p.Stack_name) {
-		c.Delete(&p.Stack_name)
-		status = *c.create(p)
-	} else if sp.exists(&p.Stack_name) {
-		status = *c.update(p)
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			sw.WaitCreate(&config.Stack_name)
+		}
+
+	} else if si.Exists(&config.Stack_name) {
+		_, err := sp.Update(&config)
+
+		if err != nil {
+			if strings.Contains(err.Error(), "ValidationError: No updates are to be performed.") {
+				fmt.Println("No updates are to be performed.")
+				os.Exit(0)
+			} else {
+				log.Fatal(err)
+			}
+		} else {
+			sw.WaitUpdate(&config.Stack_name)
+		}
+
 	} else {
-		status = *c.create(p)
+
+		_, err := sp.Create(&config)
+
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			sw.WaitCreate(&config.Stack_name)
+		}
 	}
 
-	return status
+	return si.Describe(&config.Stack_name).Stacks[0].StackStatus
 }

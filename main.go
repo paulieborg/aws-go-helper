@@ -13,11 +13,7 @@ import (
 	"github.com/paulieborg/aws-go-helper/actions"
 	"github.com/paulieborg/aws-go-helper/parse"
 	"log"
-)
-
-var (
-	ctx = context.Background()
-	svc = cf.New(session.Must(session.NewSession()))
+	"github.com/paulieborg/aws-go-helper/stack"
 )
 
 var (
@@ -32,25 +28,27 @@ var (
 func main() {
 	flag.Parse()
 
-	c := actions.CF{
-		Context: ctx,
-		Service: svc,
-	}
+	var (
+		stack_service = stack.StackService{
+			Context: context.Background(),
+			Service: cf.New(session.Must(session.NewSession())),
+		}
 
-	args := actions.ProvisionArgs{
-		Stack_name: *name,
-		Parameters: parse.Params(readFile(*params)),
-		Template:   readFile(*template),
-		BucketName: *bucket,
-		Timeout:    *timeout,
-	}
+		stack_config = stack.StackConfig{
+			Stack_name: *name,
+			Parameters: parse.Params(readFile(*params)),
+			Template:   readFile(*template),
+			BucketName: *bucket,
+			Timeout:    *timeout,
+		}
+	)
 
 	switch *action {
 	case "provision":
-		status := c.Provision(args)
-		fmt.Printf("Stack - %s\n", status)
+		status := actions.Provision(stack_service, stack_config)
+		fmt.Printf("Stack - %s\n", *status)
 	case "delete":
-		c.Delete(name)
+		actions.Delete(stack_service, stack_config)
 		fmt.Println("Stack - DELETE_COMPLETE")
 	default:
 		fmt.Printf("Unknown action '%s'\n", *action)

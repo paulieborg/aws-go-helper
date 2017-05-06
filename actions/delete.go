@@ -1,18 +1,25 @@
 package actions
 
 import (
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"log"
+	"github.com/paulieborg/aws-go-helper/stack"
 )
 
-func (c *CF) Delete(stack_name *string) {
+// Provision a CloudFormation stack
+func Delete(service stack.StackService, config stack.StackConfig) (*string) {
 
-	input := cf.DeleteStackInput{StackName: stack_name}
-	_, err := c.Service.DeleteStackWithContext(c.Context, &input)
+	var response = "DELETE_COMPLETE"
+
+	sp := stack.StackController(&service)
+	sw := stack.StackWaiter(&service)
+
+	_, err := sp.Delete(&config.Stack_name)
 
 	if err != nil {
 		log.Fatal(err)
 	} else {
-		c.waitDelete(stack_name)
+		sw.WaitDelete(&config.Stack_name)
 	}
+
+	return &response
 }
