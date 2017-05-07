@@ -4,16 +4,18 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
-type StackInfoProvider interface {
+// InfoProvider ...
+type InfoProvider interface {
 	Exists(*string) (bool)
 	Rollback(*string) (bool)
 	Describe(*string) (*cloudformation.DescribeStacksOutput)
 }
 
-func StackInfo(ss *Service) StackInfoProvider {
+// Info ...
+func Info(s *Service) InfoProvider {
 	return &Service{
-		ss.Context,
-		ss.CFAPI,
+		s.Context,
+		s.CFAPI,
 	}
 }
 

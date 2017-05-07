@@ -1,4 +1,4 @@
-package actions
+package	actions
 
 import (
 	"fmt"
@@ -10,43 +10,42 @@ import (
 )
 
 // Provision a CloudFormation stack
-func Provision(svc stack.Service, cfg stack.Config) (*string) {
-	si := stack.StackInfo(&svc)
-	sp := stack.Controller(&svc)
-	sw := stack.StackWaiter(&svc)
+func Provision(svc stack.Service, cfg stack.Config)	(status	*string, err error)	{
+	i	   := stack.Info(&svc)
+	ctrl   := stack.Controller(&svc)
+	waiter := stack.Waiter(&svc)
 
-	if si.Exists(&cfg.StackName) && si.Rollback(&cfg.StackName) {
-		sp.Delete(&cfg.StackName)
-		_, err := sp.Create(&cfg)
-
+	switch {
+	case i.Exists(&cfg.StackName) && i.Rollback(&cfg.StackName):
+		ctrl.Delete(&cfg.StackName)	 //	should the user	be warned about	this?
+		_, err = ctrl.Create(&cfg)
 		if err != nil {
 			log.Fatal(err)
-		} else {
-			sw.WaitCreate(&cfg.StackName)
+			return
 		}
+		waiter.WaitCreate(&cfg.StackName)
 
-	} else if si.Exists(&cfg.StackName) {
-		_, err := sp.Update(&cfg)
-
+	case i.Exists(&cfg.StackName):
+		_, err = ctrl.Update(&cfg)
 		if err != nil {
-			if strings.Contains(err.Error(), "ValidationError: No updates are to be performed.") {
-				fmt.Println("No updates are to be performed.")
-				os.Exit(0)
-			} else {
-				log.Fatal(err)
-			}
-		} else {
-			sw.WaitUpdate(&cfg.StackName)
+    		// TODO if AWS change this text, this'll break
+    		if strings.Contains(err.Error(), "Validation Error: No updates are to be performed.") {
+        		fmt.Println(err.Error())
+        		os.Exit(1)
+    		}
+			log.Fatal(err)
+			return
 		}
-	} else {
-		_, err := sp.Create(&cfg)
+		waiter.WaitUpdate(&cfg.StackName)
 
+	default:
+		_, err = ctrl.Create(&cfg)
 		if err != nil {
 			log.Fatal(err)
-		} else {
-			sw.WaitCreate(&cfg.StackName)
+			return
 		}
+		waiter.WaitCreate(&cfg.StackName)
 	}
 
-	return si.Describe(&cfg.StackName).Stacks[0].StackStatus
+	return i.Describe(&cfg.StackName).Stacks[0].StackStatus, nil
 }

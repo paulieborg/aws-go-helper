@@ -45,11 +45,11 @@ func main() {
 
 	switch *action {
 	case "provision":
-		status := actions.Provision(svc, cfg)
+		status, _ := actions.Provision(svc, cfg)
 		fmt.Printf("Stack - %s\n", *status)
 	case "delete":
-		actions.Delete(svc, cfg)
-		fmt.Println("Stack - DELETE_COMPLETE")
+		status, _ := actions.Delete(svc, cfg)
+		fmt.Printf("Stack - %s\n", *status)
 	default:
 		fmt.Printf("Unknown action '%s'\n", *action)
 	}

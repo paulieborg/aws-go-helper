@@ -40,15 +40,15 @@ func Controller(svc *Service) ControlProvider {
 	}
 }
 
-// Create does ...
+// Create builds a CF stack.
 func (svc *Service) Create(cfg *Config) (*cf.CreateStackOutput, error) {
 	si := &cf.CreateStackInput{
 		StackName:        aws.String(cfg.StackName),
+		Parameters:       cfg.Parameters,
+		TimeoutInMinutes: aws.Int64(cfg.Timeout),
 		Capabilities:     []*string{
 			aws.String(capability),
 		},
-		Parameters:       cfg.Parameters,
-		TimeoutInMinutes: aws.Int64(cfg.Timeout),
 	}
 
 	if cfg.BucketName == "" {
@@ -66,14 +66,14 @@ func (svc *Service) Create(cfg *Config) (*cf.CreateStackOutput, error) {
 
 }
 
-// Update does  ...
+// Update makes changes to an existing CF stack.
 func (svc *Service) Update(cfg *Config) (*cf.UpdateStackOutput, error) {
 	si := &cf.UpdateStackInput{
 		StackName:    aws.String(cfg.StackName),
+		Parameters:   cfg.Parameters,
 		Capabilities: []*string{
 			aws.String(capability),
 		},
-		Parameters:   cfg.Parameters,
 	}
 
 	if cfg.BucketName == "" {
@@ -91,7 +91,7 @@ func (svc *Service) Update(cfg *Config) (*cf.UpdateStackOutput, error) {
 
 }
 
-// Delete does ...
+// Delete destroys a CF stack.
 func (svc *Service) Delete(n *string) (*cf.DeleteStackOutput, error) {
 	si := cf.DeleteStackInput{StackName: n}
 	return svc.CFAPI.DeleteStackWithContext(svc.Context, &si)
