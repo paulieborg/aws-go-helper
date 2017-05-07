@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	StackName string = "TestStackName"
+	StackName string = "TestName"
 )
 
-func TestStackWaiter(t *testing.T) {
+func TestWaiter(t *testing.T) {
 	//when
 
 	sw := StackWaiter(NewMockWaiterSVC())
@@ -26,7 +26,7 @@ func TestStackWaiter(t *testing.T) {
 	}
 }
 
-func TestStackWaitWithErr(t *testing.T) {
+func TestWaitWithErr(t *testing.T) {
 	//when
 
 	testError := errors.New("bad-wait-error")

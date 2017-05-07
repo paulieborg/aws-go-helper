@@ -11,16 +11,16 @@ import (
 )
 
 var (
-	stack_name   = "TestStack"
-	stack_status = "CREATE_COMPLETE"
+	info_stack_name   = "Test"
+	info_stack_status = "CREATE_COMPLETE"
 
-	TestStack cf.Stack = cf.Stack{
-		StackName:   &stack_name,
-		StackStatus: &stack_status,
+	Test cf.Stack = cf.Stack{
+		StackName:   &info_stack_name,
+		StackStatus: &info_stack_status,
 	}
 )
 
-func TestStackInfo(t *testing.T) {
+func TestInfo(t *testing.T) {
 	//when
 
 	si := StackInfo(NewMockInfoSVC())
@@ -39,22 +39,22 @@ func TestStackInfo(t *testing.T) {
 
 	rollback, _ := si.Rollback(&StackName)
 	if rollback {
-		t.Fatal("expected Rollback to return false got %s.", rollback)
+		t.Errorf("expected Rollback to return false got %s.", rollback)
 	}
 
 	response, _ := si.Describe(&StackName)
 
-	if response.Stacks[0].StackName != &stack_name {
-		t.Fatal("expected StackName to be be (%v), got (%v).", stack_name, *response.Stacks[0].StackName)
+	if response.Stacks[0].StackName != &info_stack_name {
+		t.Errorf("expected StackName to be be (%s), got (%s).", info_stack_name, *response.Stacks[0].StackName)
 	}
 
-	if response.Stacks[0].StackStatus != &stack_status {
-		t.Fatal("expected StackName to be be (%v), got (%v).", stack_status, *response.Stacks[0].StackStatus)
+	if response.Stacks[0].StackStatus != &info_stack_status {
+		t.Errorf("expected StackName to be be (%s), got (%s).", info_stack_status, *response.Stacks[0].StackStatus)
 	}
 
 }
 
-func TestStackInfoWithErr(t *testing.T) {
+func TestInfoWithErr(t *testing.T) {
 	//when
 
 	testError := errors.New("bad-info-error")
@@ -113,7 +113,7 @@ func (m *mockInfoSVC) DescribeStacksWithContext(ctx aws.Context, input *cf.Descr
 func NewMockInfoSVC() *Service {
 
 	var stacks []*cf.Stack
-	stacks = append(stacks, &TestStack)
+	stacks = append(stacks, &Test)
 
 	return &Service{
 		Context: context.Background(),
