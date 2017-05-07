@@ -10,31 +10,25 @@ type StackInfoProvider interface {
 	Describe(*string) (*cloudformation.DescribeStacksOutput)
 }
 
-func StackInfo(ss *StackService) StackInfoProvider {
-	return &StackService{
+func StackInfo(ss *Service) StackInfoProvider {
+	return &Service{
 		ss.Context,
-		ss.Service,
+		ss.CFAPI,
 	}
 }
 
-func (s *StackService) Exists(stack_name *string) (bool) {
-	ds := s.Describe(stack_name)
-	if len(ds.Stacks) > 0 {
-		return true
-	}
-	return false
+func (s *Service) Exists(n *string) (bool) {
+	ds := s.Describe(n)
+    return len(ds.Stacks) > 0
 }
 
-func (s *StackService) Rollback(stack_name *string) (bool) {
-	ds := s.Describe(stack_name)
-	if *ds.Stacks[0].StackStatus == "ROLLBACK_COMPLETE" {
-		return true
-	}
-	return false
+func (s *Service) Rollback(n *string) (bool) {
+	ds := s.Describe(n)
+    return *ds.Stacks[0].StackStatus == "ROLLBACK_COMPLETE"
 }
 
-func (s *StackService) Describe(stack_name *string) (*cloudformation.DescribeStacksOutput) {
-	input := cloudformation.DescribeStacksInput{StackName: stack_name}
-	output, _ := s.Service.DescribeStacksWithContext(s.Context, &input)
-	return output
+func (s *Service) Describe(n *string) (*cloudformation.DescribeStacksOutput) {
+	in     := cloudformation.DescribeStacksInput{StackName: n}
+	out, _ := s.CFAPI.DescribeStacksWithContext(s.Context, &in)
+	return out
 }

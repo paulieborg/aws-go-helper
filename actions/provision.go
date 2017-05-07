@@ -1,32 +1,32 @@
 package actions
 
 import (
-	"github.com/paulieborg/aws-go-helper/stack"
-	"strings"
 	"fmt"
-	"os"
 	"log"
+	"os"
+	"strings"
+
+	"github.com/paulieborg/aws-go-helper/stack"
 )
 
 // Provision a CloudFormation stack
-func Provision(service stack.StackService, config stack.StackConfig) (*string) {
+func Provision(svc stack.Service, cfg stack.Config) (*string) {
+	si := stack.StackInfo(&svc)
+	sp := stack.Controller(&svc)
+	sw := stack.StackWaiter(&svc)
 
-	si := stack.StackInfo(&service)
-	sp := stack.StackController(&service)
-	sw := stack.StackWaiter(&service)
-
-	if si.Exists(&config.Stack_name) && si.Rollback(&config.Stack_name) {
-		sp.Delete(&config.Stack_name)
-		_, err := sp.Create(&config)
+	if si.Exists(&cfg.StackName) && si.Rollback(&cfg.StackName) {
+		sp.Delete(&cfg.StackName)
+		_, err := sp.Create(&cfg)
 
 		if err != nil {
 			log.Fatal(err)
 		} else {
-			sw.WaitCreate(&config.Stack_name)
+			sw.WaitCreate(&cfg.StackName)
 		}
 
-	} else if si.Exists(&config.Stack_name) {
-		_, err := sp.Update(&config)
+	} else if si.Exists(&cfg.StackName) {
+		_, err := sp.Update(&cfg)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "ValidationError: No updates are to be performed.") {
@@ -36,19 +36,17 @@ func Provision(service stack.StackService, config stack.StackConfig) (*string) {
 				log.Fatal(err)
 			}
 		} else {
-			sw.WaitUpdate(&config.Stack_name)
+			sw.WaitUpdate(&cfg.StackName)
 		}
-
 	} else {
-
-		_, err := sp.Create(&config)
+		_, err := sp.Create(&cfg)
 
 		if err != nil {
 			log.Fatal(err)
 		} else {
-			sw.WaitCreate(&config.Stack_name)
+			sw.WaitCreate(&cfg.StackName)
 		}
 	}
 
-	return si.Describe(&config.Stack_name).Stacks[0].StackStatus
+	return si.Describe(&cfg.StackName).Stacks[0].StackStatus
 }
