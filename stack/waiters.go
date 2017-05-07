@@ -8,9 +8,9 @@ import (
 )
 
 type StackWaiterProvider interface {
-	WaitCreate(*string)
-	WaitDelete(*string)
-	WaitUpdate(*string)
+	WaitCreate(*string) error
+	WaitDelete(*string) error
+	WaitUpdate(*string) error
 }
 
 func StackWaiter(s *Service) StackWaiterProvider {
@@ -20,32 +20,37 @@ func StackWaiter(s *Service) StackWaiterProvider {
 	}
 }
 
-func (s *Service) WaitCreate(n *string) {
+func (s *Service) WaitCreate(n *string) error {
 	in := cf.DescribeStacksInput{StackName: n}
 
-	s.CFAPI.WaitUntilStackCreateCompleteWithContext(
+	err := s.CFAPI.WaitUntilStackCreateCompleteWithContext(
 		s.Context,
 		&in,
-		request.WithWaiterDelay(request.ConstantWaiterDelay(15 * time.Second)),
+		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
 	)
+
+	return err
 }
 
-func (s *Service) WaitDelete(n *string) {
+func (s *Service) WaitDelete(n *string) error {
 	in := cf.DescribeStacksInput{StackName: n}
 
-	s.CFAPI.WaitUntilStackDeleteCompleteWithContext(
+	err := s.CFAPI.WaitUntilStackDeleteCompleteWithContext(
 		s.Context,
 		&in,
-		request.WithWaiterDelay(request.ConstantWaiterDelay(15 * time.Second)),
+		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
 	)
+	return err
 }
 
-func (s *Service) WaitUpdate(n *string) {
+func (s *Service) WaitUpdate(n *string) error {
 	flt := cf.DescribeStacksInput{StackName: n}
 
-	s.CFAPI.WaitUntilStackUpdateCompleteWithContext(
+	err := s.CFAPI.WaitUntilStackUpdateCompleteWithContext(
 		s.Context,
 		&flt,
-		request.WithWaiterDelay(request.ConstantWaiterDelay(15 * time.Second)),
+		request.WithWaiterDelay(request.ConstantWaiterDelay(15*time.Second)),
 	)
+	return err
+
 }

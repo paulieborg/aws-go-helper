@@ -13,7 +13,7 @@ const capability string = "CAPABILITY_NAMED_IAM"
 // Service is ...
 type Service struct {
 	Context aws.Context
-	CFAPI   cfapi.CloudFormationAPI
+	CFAPI cfapi.CloudFormationAPI
 }
 
 // Config represents a stack
@@ -34,7 +34,7 @@ type ControlProvider interface {
 
 // Controller is ...
 func Controller(svc *Service) ControlProvider {
-    return &Service{
+	return &Service{
 		svc.Context,
 		svc.CFAPI,
 	}
@@ -43,8 +43,8 @@ func Controller(svc *Service) ControlProvider {
 // Create does ...
 func (svc *Service) Create(cfg *Config) (*cf.CreateStackOutput, error) {
 	si := &cf.CreateStackInput{
-		StackName:        aws.String(cfg.StackName),
-		Capabilities:     []*string{
+		StackName: aws.String(cfg.StackName),
+		Capabilities: []*string{
 			aws.String(capability),
 		},
 		Parameters:       cfg.Parameters,
@@ -69,11 +69,11 @@ func (svc *Service) Create(cfg *Config) (*cf.CreateStackOutput, error) {
 // Update does  ...
 func (svc *Service) Update(cfg *Config) (*cf.UpdateStackOutput, error) {
 	si := &cf.UpdateStackInput{
-		StackName:    aws.String(cfg.StackName),
+		StackName: aws.String(cfg.StackName),
 		Capabilities: []*string{
 			aws.String(capability),
 		},
-		Parameters:   cfg.Parameters,
+		Parameters: cfg.Parameters,
 	}
 
 	if cfg.BucketName == "" {

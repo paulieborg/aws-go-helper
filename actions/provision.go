@@ -10,12 +10,15 @@ import (
 )
 
 // Provision a CloudFormation stack
-func Provision(svc stack.Service, cfg stack.Config) (*string) {
+func Provision(svc stack.Service, cfg stack.Config) (*string, error) {
 	si := stack.StackInfo(&svc)
 	sp := stack.Controller(&svc)
 	sw := stack.StackWaiter(&svc)
 
-	if si.Exists(&cfg.StackName) && si.Rollback(&cfg.StackName) {
+	exists, _ := si.Exists(&cfg.StackName)
+	rollback, _ := si.Rollback(&cfg.StackName)
+
+	if exists && rollback {
 		sp.Delete(&cfg.StackName)
 		_, err := sp.Create(&cfg)
 
@@ -25,7 +28,7 @@ func Provision(svc stack.Service, cfg stack.Config) (*string) {
 			sw.WaitCreate(&cfg.StackName)
 		}
 
-	} else if si.Exists(&cfg.StackName) {
+	} else if exists {
 		_, err := sp.Update(&cfg)
 
 		if err != nil {
@@ -48,5 +51,11 @@ func Provision(svc stack.Service, cfg stack.Config) (*string) {
 		}
 	}
 
-	return si.Describe(&cfg.StackName).Stacks[0].StackStatus
+	describe, err := si.Describe(&cfg.StackName)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return describe.Stacks[0].StackStatus, err
 }

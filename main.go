@@ -31,11 +31,11 @@ func main() {
 	var (
 		svc = stack.Service{
 			Context: context.Background(),
-			CFAPI: cf.New(session.Must(session.NewSession())),
+			CFAPI:   cf.New(session.Must(session.NewSession())),
 		}
 
 		cfg = stack.Config{
-			StackName: *name,
+			StackName:  *name,
 			Parameters: parse.Params(readFile(*params)),
 			Template:   readFile(*template),
 			BucketName: *bucket,
@@ -45,7 +45,10 @@ func main() {
 
 	switch *action {
 	case "provision":
-		status := actions.Provision(svc, cfg)
+		status, err := actions.Provision(svc, cfg)
+		if err != nil {
+			panic(err)
+		}
 		fmt.Printf("Stack - %s\n", *status)
 	case "delete":
 		actions.Delete(svc, cfg)

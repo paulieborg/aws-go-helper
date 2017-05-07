@@ -5,9 +5,9 @@ import (
 )
 
 type StackInfoProvider interface {
-	Exists(*string) (bool)
-	Rollback(*string) (bool)
-	Describe(*string) (*cloudformation.DescribeStacksOutput)
+	Exists(*string) (bool, error)
+	Rollback(*string) (bool, error)
+	Describe(*string) (*cloudformation.DescribeStacksOutput, error)
 }
 
 func StackInfo(ss *Service) StackInfoProvider {
@@ -17,18 +17,28 @@ func StackInfo(ss *Service) StackInfoProvider {
 	}
 }
 
-func (s *Service) Exists(n *string) (bool) {
-	ds := s.Describe(n)
-    return len(ds.Stacks) > 0
+func (s *Service) Exists(n *string) (bool, error) {
+	ds, err := s.Describe(n)
+
+	if err != nil {
+		return false, err
+	}
+
+	return len(ds.Stacks) > 0, err
 }
 
-func (s *Service) Rollback(n *string) (bool) {
-	ds := s.Describe(n)
-    return *ds.Stacks[0].StackStatus == "ROLLBACK_COMPLETE"
+func (s *Service) Rollback(n *string) (bool, error) {
+	ds, err := s.Describe(n)
+
+	if err != nil {
+		return false, err
+	}
+
+	return *ds.Stacks[0].StackStatus == "ROLLBACK_COMPLETE", err
 }
 
-func (s *Service) Describe(n *string) (*cloudformation.DescribeStacksOutput) {
-	in     := cloudformation.DescribeStacksInput{StackName: n}
-	out, _ := s.CFAPI.DescribeStacksWithContext(s.Context, &in)
-	return out
+func (s *Service) Describe(n *string) (*cloudformation.DescribeStacksOutput, error) {
+	in := cloudformation.DescribeStacksInput{StackName: n}
+	out, err := s.CFAPI.DescribeStacksWithContext(s.Context, &in)
+	return out, err
 }

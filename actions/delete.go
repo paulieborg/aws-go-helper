@@ -8,17 +8,17 @@ import (
 
 // Delete ...
 func Delete(svc stack.Service, cfg stack.Config) (resp string) {
-    resp = "DELETE_COMPLETE"
+	resp = "DELETE_COMPLETE"
 
-    ctrl := stack.Controller(&svc)
-    waiter := stack.StackWaiter(&svc)
+	ctrl := stack.Controller(&svc)
+	waiter := stack.StackWaiter(&svc)
 
 	_, err := ctrl.Delete(&cfg.StackName)
 
 	if err != nil {
 		log.Fatal(err)
 	} else {
-	    waiter.WaitDelete(&cfg.StackName)
+		waiter.WaitDelete(&cfg.StackName)
 	}
 
 	return resp
