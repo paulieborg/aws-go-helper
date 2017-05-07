@@ -22,28 +22,27 @@ type CFBucket struct {
 
 // Upload sends a CFBucket to S3 and returns its URL.
 func Upload(b CFBucket) (u string) {
-    svc := s3.New(session.Must(session.NewSession()))
-    region := os.Getenv("AWS_REGION")  // TODO brittle
-    u = fmt.Sprintf("https://s3-%s.amazonaws.com", region)
-    u = fmt.Sprintf("%s/cloudformation-templates/%s", u, b.StackName)
+	svc := s3.New(session.Must(session.NewSession()))
+	region := os.Getenv("AWS_REGION") // TODO brittle
+	u = fmt.Sprintf("https://s3-%s.amazonaws.com/%s/cloudformation-templates/%s", region, b.BucketName, b.StackName)
 
-    b.URL = u
-    err := uploadTemplate(svc, b)
-    if err != nil {
-        log.Fatal(err)
-    }
+	b.URL = u
+	err := uploadTemplate(svc, b)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    return
+	return
 }
 
 func uploadTemplate(svc s3iface.S3API, b CFBucket) (err error) {
-    p := &s3.PutObjectInput{
-        Body: bytes.NewReader(b.Template),
-        Bucket: &b.BucketName,
-        Key: aws.String(b.URL),
-    }
+	p := &s3.PutObjectInput{
+		Body:   bytes.NewReader(b.Template),
+		Bucket: &b.BucketName,
+		Key:    aws.String(b.URL),
+	}
 
-    _, err = svc.PutObject(p)
+	_, err = svc.PutObject(p)
 
-    return
+	return
 }
