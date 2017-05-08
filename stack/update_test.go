@@ -1,14 +1,13 @@
 package stack
 
 import (
+	"context"
+	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
-	cfapi "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
+	cfapi "github.com/aws/aws-sdk-go/service/cloudformation"
+	cfiface "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 	"testing"
-	"context"
-	//"fmt"
-	"errors"
 )
 
 var (
@@ -16,7 +15,7 @@ var (
 	update_stack_status = "CREATE_COMPLETE"
 	update_stack_id     = "Update Stack ID is 1234567890"
 
-	TestUpdateStack cf.Stack = cf.Stack{
+	TestUpdateStack cfapi.Stack = cfapi.Stack{
 		StackName:   &update_stack_name,
 		StackStatus: &update_stack_status,
 	}
@@ -25,7 +24,7 @@ var (
 	update_param_value = "TestParamValue"
 	//bucket_name         = "TestBucket"
 	update_stack_timeout int64 = 1
-	update_parameters    []*cf.Parameter
+	update_parameters    []*cfapi.Parameter
 )
 
 func TestUpdate(t *testing.T) {
@@ -33,7 +32,7 @@ func TestUpdate(t *testing.T) {
 
 	c := Controller(NewMockUpdateSVC())
 
-	update_parameters = append(update_parameters, &cf.Parameter{
+	update_parameters = append(update_parameters, &cfapi.Parameter{
 		ParameterKey:   &update_param_key,
 		ParameterValue: &update_param_value,
 	})
@@ -60,10 +59,10 @@ func TestUpdate(t *testing.T) {
 func TestUpdateWithErr(t *testing.T) {
 	//when
 
-	testError := errors.New("bad-info-error")
+	testError := errors.New("bad-update-error")
 	c := Controller(NewErrorMockUpdateSVC(testError))
 
-	update_parameters = append(update_parameters, &cf.Parameter{
+	update_parameters = append(update_parameters, &cfapi.Parameter{
 		ParameterKey:   &update_param_key,
 		ParameterValue: &update_param_value,
 	})
@@ -82,8 +81,8 @@ func TestUpdateWithErr(t *testing.T) {
 
 	response, updateErr := c.Update(&config)
 
-	if (cf.UpdateStackOutput{}) != *response {
-		t.Errorf("expected Update to return %s, got %s.", cf.UpdateStackOutput{}, *response)
+	if (cfapi.UpdateStackOutput{}) != *response {
+		t.Errorf("expected Update to return %s, got %s.", cfapi.UpdateStackOutput{}, *response)
 	}
 
 	if updateErr != testError {
@@ -94,14 +93,14 @@ func TestUpdateWithErr(t *testing.T) {
 
 // Helper Methods
 type mockUpdateSVC struct {
-	cfapi.CloudFormationAPI
-	input    *cf.UpdateStackInput
-	output   *cf.UpdateStackOutput
+	cfiface.CloudFormationAPI
+	input    *cfapi.UpdateStackInput
+	output   *cfapi.UpdateStackOutput
 	err      error
 	isCalled bool
 }
 
-func (m *mockUpdateSVC) UpdateStackWithContext(ctx aws.Context, input *cf.UpdateStackInput, opts ...request.Option) (*cf.UpdateStackOutput, error) {
+func (m *mockUpdateSVC) UpdateStackWithContext(ctx aws.Context, input *cfapi.UpdateStackInput, opts ...request.Option) (*cfapi.UpdateStackOutput, error) {
 	m.isCalled = true
 	m.input = input
 	return m.output, m.err
@@ -109,13 +108,13 @@ func (m *mockUpdateSVC) UpdateStackWithContext(ctx aws.Context, input *cf.Update
 
 func NewMockUpdateSVC() *Service {
 
-	var stacks []*cf.Stack
+	var stacks []*cfapi.Stack
 	stacks = append(stacks, &TestUpdateStack)
 
 	return &Service{
 		Context: context.Background(),
 		CFAPI: &mockUpdateSVC{
-			output: &cf.UpdateStackOutput{
+			output: &cfapi.UpdateStackOutput{
 				StackId: &update_stack_id,
 			},
 		},
@@ -127,7 +126,7 @@ func NewErrorMockUpdateSVC(err error) *Service {
 	return &Service{
 		Context: context.Background(),
 		CFAPI: &mockUpdateSVC{
-			output: &cf.UpdateStackOutput{},
+			output: &cfapi.UpdateStackOutput{},
 			err:    err,
 		},
 	}

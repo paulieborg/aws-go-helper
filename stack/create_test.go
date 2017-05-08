@@ -1,13 +1,13 @@
 package stack
 
 import (
+	"context"
+	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	cfapi "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 	"testing"
-	"context"
-	"errors"
 )
 
 var (
@@ -64,7 +64,7 @@ func TestCreate(t *testing.T) {
 func TestCreateWithErr(t *testing.T) {
 	//when
 
-	testError := errors.New("bad-info-error")
+	testError := errors.New("bad-create-error")
 	c := Controller(NewErrorMockCreateSVC(testError))
 
 	create_parameters = append(create_parameters, &cf.Parameter{

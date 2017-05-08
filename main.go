@@ -60,7 +60,7 @@ func main() {
 	}
 }
 
-func readFile(f string) ([]byte) {
+func readFile(f string) []byte {
 	content, err := ioutil.ReadFile(f)
 	if err != nil {
 		log.Fatal(err)

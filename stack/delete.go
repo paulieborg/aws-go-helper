@@ -1,11 +1,11 @@
 package stack
 
 import (
-	cf    "github.com/aws/aws-sdk-go/service/cloudformation"
+	cfapi "github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
 // Delete does ...
-func (svc *Service) Delete(n *string) (*cf.DeleteStackOutput, error) {
-	d := cf.DeleteStackInput{StackName: n}
+func (svc *Service) Delete(n *string) (*cfapi.DeleteStackOutput, error) {
+	d := cfapi.DeleteStackInput{StackName: n}
 	return svc.CFAPI.DeleteStackWithContext(svc.Context, &d)
 }

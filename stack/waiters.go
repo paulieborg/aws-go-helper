@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/request"
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
+	cfapi "github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
 type WaiterProvider interface {
@@ -21,7 +21,7 @@ func Waiter(s *Service) WaiterProvider {
 }
 
 func (s *Service) WaitCreate(n *string) error {
-	in := cf.DescribeStacksInput{StackName: n}
+	in := cfapi.DescribeStacksInput{StackName: n}
 
 	err := s.CFAPI.WaitUntilStackCreateCompleteWithContext(
 		s.Context,
@@ -33,7 +33,7 @@ func (s *Service) WaitCreate(n *string) error {
 }
 
 func (s *Service) WaitDelete(n *string) error {
-	in := cf.DescribeStacksInput{StackName: n}
+	in := cfapi.DescribeStacksInput{StackName: n}
 
 	err := s.CFAPI.WaitUntilStackDeleteCompleteWithContext(
 		s.Context,
@@ -44,7 +44,7 @@ func (s *Service) WaitDelete(n *string) error {
 }
 
 func (s *Service) WaitUpdate(n *string) error {
-	flt := cf.DescribeStacksInput{StackName: n}
+	flt := cfapi.DescribeStacksInput{StackName: n}
 
 	err := s.CFAPI.WaitUntilStackUpdateCompleteWithContext(
 		s.Context,

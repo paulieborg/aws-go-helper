@@ -5,14 +5,14 @@ import (
 
 	"encoding/json"
 
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
+	cfapi "github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
 // Params takes a simple JSON blob of parameters and converts it to a slice
 // of CloudFormation parameter structs
-func Params(params []byte) ([]*cf.Parameter) {
+func Params(params []byte) []*cfapi.Parameter {
 	var sp map[string]string
-	var p []*cf.Parameter
+	var p []*cfapi.Parameter
 
 	err := json.NewDecoder(bytes.NewReader(params)).Decode(&sp)
 	if err != nil {
@@ -22,7 +22,7 @@ func Params(params []byte) ([]*cf.Parameter) {
 	for k, v := range sp {
 		p_key := k
 		p_val := v
-		p = append(p, &cf.Parameter{
+		p = append(p, &cfapi.Parameter{
 			ParameterKey:   &p_key,
 			ParameterValue: &p_val,
 		})

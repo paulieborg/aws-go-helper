@@ -1,13 +1,13 @@
 package stack
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
-	cfapi "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
-	"testing"
 	"context"
 	"errors"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
+	cfapi "github.com/aws/aws-sdk-go/service/cloudformation"
+	cfiface "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
+	"testing"
 )
 
 var (
@@ -53,22 +53,22 @@ func TestWaitWithErr(t *testing.T) {
 
 // Helper Methods
 type mockWaiterSVC struct {
-	cfapi.CloudFormationAPI
+	cfiface.CloudFormationAPI
 	err      error
 	isCalled bool
 }
 
-func (m *mockWaiterSVC) WaitUntilStackCreateCompleteWithContext(ctx aws.Context, input *cf.DescribeStacksInput, opts ...request.WaiterOption) error {
+func (m *mockWaiterSVC) WaitUntilStackCreateCompleteWithContext(ctx aws.Context, input *cfapi.DescribeStacksInput, opts ...request.WaiterOption) error {
 	m.isCalled = true
 	return m.err
 }
 
-func (m *mockWaiterSVC) WaitUntilStackDeleteCompleteWithContext(ctx aws.Context, input *cf.DescribeStacksInput, opts ...request.WaiterOption) error {
+func (m *mockWaiterSVC) WaitUntilStackDeleteCompleteWithContext(ctx aws.Context, input *cfapi.DescribeStacksInput, opts ...request.WaiterOption) error {
 	m.isCalled = true
 	return m.err
 }
 
-func (m *mockWaiterSVC) WaitUntilStackUpdateCompleteWithContext(ctx aws.Context, input *cf.DescribeStacksInput, opts ...request.WaiterOption) error {
+func (m *mockWaiterSVC) WaitUntilStackUpdateCompleteWithContext(ctx aws.Context, input *cfapi.DescribeStacksInput, opts ...request.WaiterOption) error {
 	m.isCalled = true
 	return m.err
 }
@@ -85,7 +85,7 @@ func NewErrorMockWaiterSVC(err error) *Service {
 
 	return &Service{
 		Context: context.Background(),
-		CFAPI:   &mockWaiterSVC{err: err, },
+		CFAPI:   &mockWaiterSVC{err: err},
 	}
 
 }
