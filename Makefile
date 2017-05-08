@@ -12,6 +12,8 @@ checks:
 	@go fmt $(shell go list ./... | grep -v /vendor/)
 	@echo "Run GO vetting ..."
 	@go vet $(shell go list ./... | grep -v /vendor/)
+	@echo "Run GO coverage ..."
+	@go test -cover $(shell go list ./... | grep -v /vendor/)
 
 build: glide
 	@echo "+++ building for $(GOOS)-$(GOARCH) ..."
