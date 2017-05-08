@@ -17,12 +17,12 @@ var (
 func TestWaiter(t *testing.T) {
 	//when
 
-	sw := StackWaiter(NewMockWaiterSVC())
+	w := Waiter(NewMockWaiterSVC())
 
 	//then
-	_, ok := sw.(*Service)
+	_, ok := w.(*Service)
 	if !ok {
-		t.Errorf("expected Stack Waiter to be (*stack.Service), got (%T)", sw)
+		t.Errorf("expected Stack Waiter to be (*stack.Service), got (%T)", w)
 	}
 }
 
@@ -30,21 +30,21 @@ func TestWaitWithErr(t *testing.T) {
 	//when
 
 	testError := errors.New("bad-wait-error")
-	sw := StackWaiter(NewErrorMockWaiterSVC(testError))
+	w := Waiter(NewErrorMockWaiterSVC(testError))
 
 	//then
 
-	errCreate := sw.WaitCreate(&StackName)
+	errCreate := w.WaitCreate(&StackName)
 	if errCreate != testError {
 		t.Errorf("expected error to be (%v), got (%v).", "bad-wait-error", errCreate)
 	}
 
-	errDelete := sw.WaitDelete(&StackName)
+	errDelete := w.WaitDelete(&StackName)
 	if errDelete != testError {
 		t.Errorf("expected error to be (%v), got (%v).", "bad-wait-error", errDelete)
 	}
 
-	errUpdate := sw.WaitUpdate(&StackName)
+	errUpdate := w.WaitUpdate(&StackName)
 	if errUpdate != testError {
 		t.Errorf("expected error to be (%v), got (%v).", "bad-wait-error", errUpdate)
 	}

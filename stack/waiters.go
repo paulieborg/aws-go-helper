@@ -7,13 +7,13 @@ import (
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
-type StackWaiterProvider interface {
+type WaiterProvider interface {
 	WaitCreate(*string) error
 	WaitDelete(*string) error
 	WaitUpdate(*string) error
 }
 
-func StackWaiter(s *Service) StackWaiterProvider {
+func Waiter(s *Service) WaiterProvider {
 	return &Service{
 		s.Context,
 		s.CFAPI,
