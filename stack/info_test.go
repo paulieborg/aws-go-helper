@@ -23,26 +23,26 @@ var (
 func TestInfo(t *testing.T) {
 	//when
 
-	si := StackInfo(NewMockInfoSVC())
+	i := Info(NewMockInfoSVC())
 
 	//then
-	_, ok := si.(*Service)
+	_, ok := i.(*Service)
 	if !ok {
-		t.Errorf("expected Stack Waiter to be (*stack.Service), got (%T)", si)
+		t.Errorf("expected Stack Waiter to be (*stack.Service), got (%T)", i)
 	}
 
-	exists, _ := si.Exists(&StackName)
+	exists, _ := i.Exists(&StackName)
 
 	if !exists {
 		t.Errorf("expected Exists to return true got %s", exists)
 	}
 
-	rollback, _ := si.Rollback(&StackName)
+	rollback, _ := i.Rollback(&StackName)
 	if rollback {
 		t.Errorf("expected Rollback to return false got %s.", rollback)
 	}
 
-	response, _ := si.Describe(&StackName)
+	response, _ := i.Describe(&StackName)
 
 	if response.Stacks[0].StackName != &info_stack_name {
 		t.Errorf("expected StackName to be be (%s), got (%s).", info_stack_name, *response.Stacks[0].StackName)
@@ -58,11 +58,11 @@ func TestInfoWithErr(t *testing.T) {
 	//when
 
 	testError := errors.New("bad-info-error")
-	si := StackInfo(NewErrorMockInfoSVC(testError))
+	i := Info(NewErrorMockInfoSVC(testError))
 
 	//then
 
-	exists, existsErr := si.Exists(&StackName)
+	exists, existsErr := i.Exists(&StackName)
 
 	if exists {
 		t.Errorf("expected Exists to return false, got %s.", exists)
@@ -72,7 +72,7 @@ func TestInfoWithErr(t *testing.T) {
 		t.Errorf("expected error, got %v.", existsErr)
 	}
 
-	rollback, rollbackErr := si.Rollback(&StackName)
+	rollback, rollbackErr := i.Rollback(&StackName)
 
 	if rollback {
 		t.Errorf("expected Rollback to return false, got %s.", rollback)
@@ -82,7 +82,7 @@ func TestInfoWithErr(t *testing.T) {
 		t.Errorf("expected error, got %v.", rollbackErr)
 	}
 
-	describe, describeErr := si.Describe(&StackName)
+	describe, describeErr := i.Describe(&StackName)
 
 	//todo: Check this test as the sense is wrong
 	if (&cf.DescribeStacksOutput{}) == describe {

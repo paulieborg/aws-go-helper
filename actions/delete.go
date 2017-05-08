@@ -1,25 +1,19 @@
 package actions
 
 import (
-	"log"
-
 	"github.com/paulieborg/aws-go-helper/stack"
 )
 
 // Delete ...
-func Delete(svc stack.Service, cfg stack.Config) (resp string) {
-	resp = "DELETE_COMPLETE"
-
+func Delete(svc stack.Service, name *string) (err error) {
 	ctrl := stack.Controller(&svc)
-	waiter := stack.StackWaiter(&svc)
+	waiter := stack.Waiter(&svc)
 
-	_, err := ctrl.Delete(&cfg.StackName)
+	_, err = ctrl.Delete(name)
 
 	if err != nil {
-		log.Fatal(err)
-	} else {
-		waiter.WaitDelete(&cfg.StackName)
+		return
 	}
 
-	return resp
+	return waiter.WaitDelete(name)
 }

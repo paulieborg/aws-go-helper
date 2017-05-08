@@ -1,8 +1,10 @@
 package parse
 
 import (
-	"encoding/json"
 	"bytes"
+
+	"encoding/json"
+
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 )
 

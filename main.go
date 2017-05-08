@@ -33,25 +33,27 @@ func main() {
 			Context: context.Background(),
 			CFAPI:   cf.New(session.Must(session.NewSession())),
 		}
+	)
 
-		cfg = stack.Config{
+	switch *action {
+	case "provision":
+		cfg := stack.Config{
 			StackName:  *name,
 			Parameters: parse.Params(readFile(*params)),
 			Template:   readFile(*template),
 			BucketName: *bucket,
 			Timeout:    *timeout,
 		}
-	)
-
-	switch *action {
-	case "provision":
 		status, err := actions.Provision(svc, cfg)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		fmt.Printf("Stack - %s\n", *status)
 	case "delete":
-		actions.Delete(svc, cfg)
+		err := actions.Delete(svc, name)
+		if err != nil {
+			log.Fatal(err)
+		}
 		fmt.Println("Stack - DELETE_COMPLETE")
 	default:
 		fmt.Printf("Unknown action '%s'\n", *action)

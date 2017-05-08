@@ -6,7 +6,6 @@ import (
 
 // Delete does ...
 func (svc *Service) Delete(n *string) (*cf.DeleteStackOutput, error) {
-	si := cf.DeleteStackInput{StackName: n}
-	return svc.CFAPI.DeleteStackWithContext(svc.Context, &si)
-
+	d := cf.DeleteStackInput{StackName: n}
+	return svc.CFAPI.DeleteStackWithContext(svc.Context, &d)
 }
