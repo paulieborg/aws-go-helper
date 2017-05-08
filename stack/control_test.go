@@ -2,9 +2,8 @@ package stack
 
 import (
 	"context"
+	cfiface "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 	"testing"
-
-	cfapi "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 )
 
 func TestControl(t *testing.T) {
@@ -21,7 +20,7 @@ func TestControl(t *testing.T) {
 
 //// Helper Methods
 type mockControlSVC struct {
-	cfapi.CloudFormationAPI
+	cfiface.CloudFormationAPI
 }
 
 func NewMockControlSVC() *Service {

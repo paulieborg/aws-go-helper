@@ -2,13 +2,15 @@ package stack
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/aws/aws-sdk-go/aws/session"
+	cfapi "github.com/aws/aws-sdk-go/service/cloudformation"
+	s3api "github.com/aws/aws-sdk-go/service/s3"
 	"github.com/paulieborg/aws-go-helper/s3"
 )
 
 // Create does ...
-func (svc *Service) Create(cfg *Config) (*cf.CreateStackOutput, error) {
-	si := &cf.CreateStackInput{
+func (svc *Service) Create(cfg *Config) (*cfapi.CreateStackOutput, error) {
+	i := &cfapi.CreateStackInput{
 		StackName: aws.String(cfg.StackName),
 		Capabilities: []*string{
 			aws.String(capability),
@@ -18,16 +20,22 @@ func (svc *Service) Create(cfg *Config) (*cf.CreateStackOutput, error) {
 	}
 
 	if cfg.BucketName == "" {
-		si.TemplateBody = aws.String(string(cfg.Template))
+		i.TemplateBody = aws.String(string(cfg.Template))
 	} else {
 		b := s3.CFBucket{
 			StackName:  cfg.StackName,
 			Template:   cfg.Template,
 			BucketName: cfg.BucketName,
 		}
-		si.TemplateURL = aws.String(s3.Upload(b))
+
+		s := s3.Service{
+			Context: svc.Context,
+			S3API:   s3api.New(session.Must(session.NewSession())),
+		}
+
+		i.TemplateURL = aws.String(s3.Upload(&s, b))
 	}
 
-	return svc.CFAPI.CreateStackWithContext(svc.Context, si)
+	return svc.CFAPI.CreateStackWithContext(svc.Context, i)
 
 }

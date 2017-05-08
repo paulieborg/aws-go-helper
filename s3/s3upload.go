@@ -3,14 +3,18 @@ package s3
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"log"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	s3api "github.com/aws/aws-sdk-go/service/s3/s3iface"
 )
+
+type Service struct {
+	Context aws.Context
+	S3API   s3api.S3API
+}
 
 // CFBucket is an S3 bucket which contains a CloudFormation template.
 type CFBucket struct {
@@ -20,9 +24,12 @@ type CFBucket struct {
 	URL        string
 }
 
+type UploadTemplate interface {
+	Upload(svc *Service, b CFBucket) (u string)
+}
+
 // Upload sends a CFBucket to S3 and returns its URL.
-func Upload(b CFBucket) (u string) {
-	svc := s3.New(session.Must(session.NewSession()))
+func Upload(svc *Service, b CFBucket) (u string) {
 	region := os.Getenv("AWS_REGION") // TODO brittle
 	u = fmt.Sprintf("https://s3-%s.amazonaws.com/%s/cloudformation-templates/%s", region, b.BucketName, b.StackName)
 
@@ -35,14 +42,14 @@ func Upload(b CFBucket) (u string) {
 	return
 }
 
-func uploadTemplate(svc s3iface.S3API, b CFBucket) (err error) {
+func uploadTemplate(svc *Service, b CFBucket) (err error) {
 	p := &s3.PutObjectInput{
 		Body:   bytes.NewReader(b.Template),
 		Bucket: &b.BucketName,
 		Key:    aws.String(b.URL),
 	}
 
-	_, err = svc.PutObject(p)
+	_, err = svc.S3API.PutObject(p)
 
 	return
 }

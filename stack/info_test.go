@@ -1,20 +1,20 @@
 package stack
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/request"
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
-	cfapi "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
-	"testing"
 	"context"
 	"errors"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
+	cfapi "github.com/aws/aws-sdk-go/service/cloudformation"
+	cfiface "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
+	"testing"
 )
 
 var (
 	info_stack_name   = "Test"
 	info_stack_status = "CREATE_COMPLETE"
 
-	Test cf.Stack = cf.Stack{
+	Test cfapi.Stack = cfapi.Stack{
 		StackName:   &info_stack_name,
 		StackStatus: &info_stack_status,
 	}
@@ -34,12 +34,12 @@ func TestInfo(t *testing.T) {
 	exists, _ := i.Exists(&StackName)
 
 	if !exists {
-		t.Errorf("expected Exists to return true got %s", exists)
+		t.Errorf("expected Exists to return true got %v", exists)
 	}
 
 	rollback, _ := i.Rollback(&StackName)
 	if rollback {
-		t.Errorf("expected Rollback to return false got %s.", rollback)
+		t.Errorf("expected Rollback to return false got %v.", rollback)
 	}
 
 	response, _ := i.Describe(&StackName)
@@ -65,7 +65,7 @@ func TestInfoWithErr(t *testing.T) {
 	exists, existsErr := i.Exists(&StackName)
 
 	if exists {
-		t.Errorf("expected Exists to return false, got %s.", exists)
+		t.Errorf("expected Exists to return false, got %v.", exists)
 	}
 
 	if existsErr != testError {
@@ -75,7 +75,7 @@ func TestInfoWithErr(t *testing.T) {
 	rollback, rollbackErr := i.Rollback(&StackName)
 
 	if rollback {
-		t.Errorf("expected Rollback to return false, got %s.", rollback)
+		t.Errorf("expected Rollback to return false, got %v.", rollback)
 	}
 
 	if rollbackErr != testError {
@@ -85,8 +85,8 @@ func TestInfoWithErr(t *testing.T) {
 	describe, describeErr := i.Describe(&StackName)
 
 	//todo: Check this test as the sense is wrong
-	if (&cf.DescribeStacksOutput{}) == describe {
-		t.Errorf("expected Describe to return %s, got %s.", &cf.DescribeStacksOutput{}, describe)
+	if (&cfapi.DescribeStacksOutput{}) == describe {
+		t.Errorf("expected Describe to return %s, got %s.", &cfapi.DescribeStacksOutput{}, describe)
 	}
 
 	if describeErr != testError {
@@ -97,14 +97,14 @@ func TestInfoWithErr(t *testing.T) {
 
 // Helper Methods
 type mockInfoSVC struct {
-	cfapi.CloudFormationAPI
-	input    *cf.DescribeStacksInput
-	output   *cf.DescribeStacksOutput
+	cfiface.CloudFormationAPI
+	input    *cfapi.DescribeStacksInput
+	output   *cfapi.DescribeStacksOutput
 	err      error
 	isCalled bool
 }
 
-func (m *mockInfoSVC) DescribeStacksWithContext(ctx aws.Context, input *cf.DescribeStacksInput, opts ...request.Option) (*cf.DescribeStacksOutput, error) {
+func (m *mockInfoSVC) DescribeStacksWithContext(ctx aws.Context, input *cfapi.DescribeStacksInput, opts ...request.Option) (*cfapi.DescribeStacksOutput, error) {
 	m.isCalled = true
 	m.input = input
 	return m.output, m.err
@@ -112,13 +112,13 @@ func (m *mockInfoSVC) DescribeStacksWithContext(ctx aws.Context, input *cf.Descr
 
 func NewMockInfoSVC() *Service {
 
-	var stacks []*cf.Stack
+	var stacks []*cfapi.Stack
 	stacks = append(stacks, &Test)
 
 	return &Service{
 		Context: context.Background(),
 		CFAPI: &mockInfoSVC{
-			output: &cf.DescribeStacksOutput{
+			output: &cfapi.DescribeStacksOutput{
 				Stacks: stacks,
 			},
 		},
@@ -130,7 +130,7 @@ func NewErrorMockInfoSVC(err error) *Service {
 	return &Service{
 		Context: context.Background(),
 		CFAPI: &mockInfoSVC{
-			output: &cf.DescribeStacksOutput{},
+			output: &cfapi.DescribeStacksOutput{},
 			err:    err,
 		},
 	}

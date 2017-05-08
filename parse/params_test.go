@@ -15,19 +15,19 @@ func TestParams(t *testing.T) {
 
 	var p []*cf.Parameter = Params(params)
 
-	if ! keyInList("ParamOne", p) {
+	if !keyInList("ParamOne", p) {
 		t.Errorf("expected: %s", "ParamOne")
 	}
 
-	if ! keyInList("ParamTwo", p) {
+	if !keyInList("ParamTwo", p) {
 		t.Errorf("expected: %s", "ParamTwo")
 	}
 
-	if ! valueInList("1", p) {
+	if !valueInList("1", p) {
 		t.Errorf("expected: %s", "1")
 	}
 
-	if ! valueInList("2", p) {
+	if !valueInList("2", p) {
 		t.Errorf("expected: %s", "2")
 	}
 }
