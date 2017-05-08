@@ -11,7 +11,7 @@ import (
 
 // Provision a CloudFormation stack
 
-func Provision(svc stack.Service, cfg stack.Config) (status *string, err error) {
+func Provision(svc stack.Service, cfg stack.Config) (status string, err error) {
 	i := stack.Info(&svc)
 	ctrl := stack.Controller(&svc)
 	waiter := stack.Waiter(&svc)
@@ -36,7 +36,7 @@ func Provision(svc stack.Service, cfg stack.Config) (status *string, err error) 
 				fmt.Println("No updates are to be performed")
 				os.Exit(0)
 			}
-			return nil, err
+			return
 		}
 		waiter.WaitUpdate(&cfg.StackName)
 
@@ -52,8 +52,8 @@ func Provision(svc stack.Service, cfg stack.Config) (status *string, err error) 
 	describe, err := i.Describe(&cfg.StackName)
 
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	return describe.Stacks[0].StackStatus, err
+	return *describe.Stacks[0].StackStatus, err
 }

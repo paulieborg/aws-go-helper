@@ -5,15 +5,14 @@ import (
 )
 
 // Delete ...
-func Delete(svc stack.Service, name *string) (err error) {
+func Delete(svc stack.Service, name *string) (status string, err error) {
 	ctrl := stack.Controller(&svc)
 	waiter := stack.Waiter(&svc)
 
-	_, err = ctrl.Delete(name)
-
+	stackOutput, err := ctrl.Delete(name)
 	if err != nil {
 		return
 	}
 
-	return waiter.WaitDelete(name)
+	return stackOutput.String(), waiter.WaitDelete(name)
 }
