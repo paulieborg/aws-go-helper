@@ -2,7 +2,7 @@ package stack
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	cf    "github.com/aws/aws-sdk-go/service/cloudformation"
+	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	cfapi "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 )
 
@@ -11,7 +11,7 @@ const capability string = "CAPABILITY_NAMED_IAM"
 // Service is ...
 type Service struct {
 	Context aws.Context
-	CFAPI cfapi.CloudFormationAPI
+	CFAPI   cfapi.CloudFormationAPI
 }
 
 // Config represents a stack

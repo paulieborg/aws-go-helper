@@ -1,9 +1,10 @@
 package stack
 
 import (
-	cfapi "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
-	"testing"
 	"context"
+	"testing"
+
+	cfapi "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
 )
 
 func TestControl(t *testing.T) {

@@ -2,8 +2,7 @@ package stack
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	cf    "github.com/aws/aws-sdk-go/service/cloudformation"
-
+	cf "github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/paulieborg/aws-go-helper/s3"
 )
 

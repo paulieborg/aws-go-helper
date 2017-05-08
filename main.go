@@ -48,19 +48,19 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("Stack - %s\n", *status)
+		fmt.Printf("Stack - %s\n", status)
 	case "delete":
-		err := actions.Delete(svc, name)
+		status, err := actions.Delete(svc, name)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("Stack - DELETE_COMPLETE")
+		fmt.Printf("Stack - %s\n", status)
 	default:
 		fmt.Printf("Unknown action '%s'\n", *action)
 	}
 }
 
-func readFile(f string) ([]byte) {
+func readFile(f string) []byte {
 	content, err := ioutil.ReadFile(f)
 	if err != nil {
 		log.Fatal(err)
