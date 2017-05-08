@@ -2,16 +2,15 @@ package stack
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	cfapi "github.com/aws/aws-sdk-go/service/cloudformation"
-	s3api "github.com/aws/aws-sdk-go/service/s3"
-
-	"github.com/paulieborg/aws-go-helper/s3"
 )
 
 // Update does  ...
 func (svc *Service) Update(cfg *Config) (*cfapi.UpdateStackOutput, error) {
-	si := &cfapi.UpdateStackInput{
+
+	var err error = nil
+
+	u := &cfapi.UpdateStackInput{
 		StackName: aws.String(cfg.StackName),
 		Capabilities: []*string{
 			aws.String(capability),
@@ -20,22 +19,21 @@ func (svc *Service) Update(cfg *Config) (*cfapi.UpdateStackOutput, error) {
 	}
 
 	if cfg.BucketName == "" {
-		si.TemplateBody = aws.String(string(cfg.Template))
+		u.TemplateBody = aws.String(string(cfg.Template))
 	} else {
-		b := s3.CFBucket{
+		b := CFBucket{
 			StackName:  cfg.StackName,
 			Template:   cfg.Template,
 			BucketName: cfg.BucketName,
 		}
 
-		s := s3.Service{
-			Context: svc.Context,
-			S3API:   s3api.New(session.Must(session.NewSession())),
-		}
+		u.TemplateURL, err = Upload(svc, b)
 
-		si.TemplateURL = aws.String(s3.Upload(&s, b))
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return svc.CFAPI.UpdateStackWithContext(svc.Context, si)
+	return svc.CFAPI.UpdateStackWithContext(svc.Context, u)
 
 }

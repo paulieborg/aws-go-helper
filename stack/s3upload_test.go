@@ -1,4 +1,4 @@
-package s3
+package stack
 
 import (
 	"context"
@@ -9,33 +9,32 @@ import (
 )
 
 var (
-	name        = "TestStackName"
-	template    = []byte{'T', 'e', 's', 't', 'i', 'n', 'g'}
 	bucket_name = "TestBucketName"
-	url         = "https://s3-ap-southeast-2.amazonaws.com/TestBucketName/cloudformation-templates/" + name
-
-	bucket = CFBucket{}
+	url         = "https://s3-ap-southeast-2.amazonaws.com/TestBucketName/cloudformation-templates/" + stack_name
 )
 
 func TestUpload(t *testing.T) {
 	//when
 
 	upload_bucket := CFBucket{
-		StackName:  name,
+		StackName:  stack_name,
 		BucketName: bucket_name,
 	}
 
-	response_url := Upload(NewMockUploadSVC(), upload_bucket)
+	response_url, _ := Upload(NewMockUploadSVC(), upload_bucket)
 
-	if response_url != url {
-		t.Errorf("Expected %s, got (%v)", url, response_url)
+	if *response_url != url {
+		t.Errorf("Expected %s, got (%v)", url, *response_url)
 	}
 
 }
 
 func TestUploadTemplate(t *testing.T) {
 	//when
-	err := uploadTemplate(NewMockUploadSVC(), bucket)
+
+	upload_bucket := CFBucket{}
+
+	err := uploadTemplate(NewMockUploadSVC(), upload_bucket)
 
 	if err != nil {
 		t.Error("Upload returned", err)
@@ -44,9 +43,12 @@ func TestUploadTemplate(t *testing.T) {
 
 func TestUploadTemplateErr(t *testing.T) {
 	//when
+
+	upload_bucket := CFBucket{}
+
 	testError := errors.New("bad-create-error")
 
-	err := uploadTemplate(NewErrorMockCreateSVC(testError), bucket)
+	err := uploadTemplate(NewErrorMockUploadSVC(testError), upload_bucket)
 
 	if err != testError {
 		t.Errorf("Expected bad-create-error but got (%v)", testError)
@@ -78,7 +80,7 @@ func NewMockUploadSVC() *Service {
 	}
 }
 
-func NewErrorMockCreateSVC(err error) *Service {
+func NewErrorMockUploadSVC(err error) *Service {
 	return &Service{
 		Context: context.Background(),
 		S3API: &mockUploadSVC{

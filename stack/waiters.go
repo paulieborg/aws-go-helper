@@ -17,6 +17,7 @@ func Waiter(s *Service) WaiterProvider {
 	return &Service{
 		s.Context,
 		s.CFAPI,
+		s.S3API,
 	}
 }
 

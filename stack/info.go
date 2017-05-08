@@ -15,6 +15,7 @@ func Info(s *Service) InfoProvider {
 	return &Service{
 		s.Context,
 		s.CFAPI,
+		s.S3API,
 	}
 }
 

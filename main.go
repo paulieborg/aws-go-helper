@@ -10,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	cf "github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/aws/aws-sdk-go/service/s3"
 
 	"github.com/paulieborg/aws-go-helper/actions"
 	"github.com/paulieborg/aws-go-helper/parse"
@@ -32,6 +33,7 @@ func main() {
 		svc = stack.Service{
 			Context: context.Background(),
 			CFAPI:   cf.New(session.Must(session.NewSession())),
+			S3API:   s3.New(session.Must(session.NewSession())),
 		}
 	)
 

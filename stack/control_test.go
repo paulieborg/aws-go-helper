@@ -6,6 +6,11 @@ import (
 	"testing"
 )
 
+var (
+	stack_name   = "TestStack"
+	stack_status = "CREATE_COMPLETE"
+)
+
 func TestControl(t *testing.T) {
 	//when
 

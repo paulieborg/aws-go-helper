@@ -10,10 +10,6 @@ import (
 	"testing"
 )
 
-var (
-	StackName string = "TestName"
-)
-
 func TestWaiter(t *testing.T) {
 	//when
 
@@ -34,17 +30,17 @@ func TestWaitWithErr(t *testing.T) {
 
 	//then
 
-	errCreate := w.WaitCreate(&StackName)
+	errCreate := w.WaitCreate(&stack_name)
 	if errCreate != testError {
 		t.Errorf("expected error to be (%v), got (%v).", "bad-wait-error", errCreate)
 	}
 
-	errDelete := w.WaitDelete(&StackName)
+	errDelete := w.WaitDelete(&stack_name)
 	if errDelete != testError {
 		t.Errorf("expected error to be (%v), got (%v).", "bad-wait-error", errDelete)
 	}
 
-	errUpdate := w.WaitUpdate(&StackName)
+	errUpdate := w.WaitUpdate(&stack_name)
 	if errUpdate != testError {
 		t.Errorf("expected error to be (%v), got (%v).", "bad-wait-error", errUpdate)
 	}

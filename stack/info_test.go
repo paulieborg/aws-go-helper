@@ -11,12 +11,9 @@ import (
 )
 
 var (
-	info_stack_name   = "Test"
-	info_stack_status = "CREATE_COMPLETE"
-
 	Test cfapi.Stack = cfapi.Stack{
-		StackName:   &info_stack_name,
-		StackStatus: &info_stack_status,
+		StackName:   &stack_name,
+		StackStatus: &stack_status,
 	}
 )
 
@@ -31,25 +28,25 @@ func TestInfo(t *testing.T) {
 		t.Errorf("expected Stack Waiter to be (*stack.Service), got (%T)", i)
 	}
 
-	exists, _ := i.Exists(&StackName)
+	exists, _ := i.Exists(&stack_name)
 
 	if !exists {
 		t.Errorf("expected Exists to return true got %v", exists)
 	}
 
-	rollback, _ := i.Rollback(&StackName)
+	rollback, _ := i.Rollback(&stack_name)
 	if rollback {
 		t.Errorf("expected Rollback to return false got %v.", rollback)
 	}
 
-	response, _ := i.Describe(&StackName)
+	response, _ := i.Describe(&stack_name)
 
-	if response.Stacks[0].StackName != &info_stack_name {
-		t.Errorf("expected StackName to be be (%s), got (%s).", info_stack_name, *response.Stacks[0].StackName)
+	if response.Stacks[0].StackName != &stack_name {
+		t.Errorf("expected stack_name to be be (%s), got (%s).", stack_name, *response.Stacks[0].StackName)
 	}
 
-	if response.Stacks[0].StackStatus != &info_stack_status {
-		t.Errorf("expected StackName to be be (%s), got (%s).", info_stack_status, *response.Stacks[0].StackStatus)
+	if response.Stacks[0].StackStatus != &stack_status {
+		t.Errorf("expected stack_name to be be (%s), got (%s).", stack_status, *response.Stacks[0].StackStatus)
 	}
 
 }
@@ -62,7 +59,7 @@ func TestInfoWithErr(t *testing.T) {
 
 	//then
 
-	exists, existsErr := i.Exists(&StackName)
+	exists, existsErr := i.Exists(&stack_name)
 
 	if exists {
 		t.Errorf("expected Exists to return false, got %v.", exists)
@@ -72,7 +69,7 @@ func TestInfoWithErr(t *testing.T) {
 		t.Errorf("expected error, got %v.", existsErr)
 	}
 
-	rollback, rollbackErr := i.Rollback(&StackName)
+	rollback, rollbackErr := i.Rollback(&stack_name)
 
 	if rollback {
 		t.Errorf("expected Rollback to return false, got %v.", rollback)
@@ -82,7 +79,7 @@ func TestInfoWithErr(t *testing.T) {
 		t.Errorf("expected error, got %v.", rollbackErr)
 	}
 
-	describe, describeErr := i.Describe(&StackName)
+	describe, describeErr := i.Describe(&stack_name)
 
 	//todo: Check this test as the sense is wrong
 	if (&cfapi.DescribeStacksOutput{}) == describe {

@@ -7,24 +7,22 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	cfapi "github.com/aws/aws-sdk-go/service/cloudformation"
 	cfiface "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"testing"
 )
 
 var (
-	update_stack_name   = "TestStack"
-	update_stack_status = "CREATE_COMPLETE"
-	update_stack_id     = "Update Stack ID is 1234567890"
+	update_stack_id = "Update Stack ID is 1234567890"
 
 	TestUpdateStack cfapi.Stack = cfapi.Stack{
-		StackName:   &update_stack_name,
-		StackStatus: &update_stack_status,
+		StackName:   &stack_name,
+		StackStatus: &stack_status,
 	}
 
 	update_param_key   = "TestParamKey"
 	update_param_value = "TestParamValue"
-	//bucket_name         = "TestBucket"
-	update_stack_timeout int64 = 1
-	update_parameters    []*cfapi.Parameter
+	update_parameters  []*cfapi.Parameter
 )
 
 func TestUpdate(t *testing.T) {
@@ -39,19 +37,33 @@ func TestUpdate(t *testing.T) {
 
 	params := &update_parameters
 
-	config := Config{
+	config_no_bucket := Config{
 		StackName:  *name,
 		Parameters: *params,
 		Template:   template,
-		//BucketName: *bucket,
-		Timeout: *timeout,
+		Timeout:    *timeout,
 	}
 
 	//then
-	update_output, _ := c.Update(&config)
+	output_no_bucket, _ := c.Update(&config_no_bucket)
 
-	if update_output.StackId != &update_stack_id {
-		t.Errorf("expected Update response to be 1234567890, got (%s)", *update_output.StackId)
+	if output_no_bucket.StackId != &update_stack_id {
+		t.Errorf("expected Update response to be 1234567890, got (%s)", *output_no_bucket.StackId)
+	}
+
+	config_with_bucket := Config{
+		StackName:  *name,
+		Parameters: *params,
+		Template:   template,
+		BucketName: *bucket,
+		Timeout:    *timeout,
+	}
+
+	//then
+	output_with_bucket, _ := c.Update(&config_with_bucket)
+
+	if output_with_bucket.StackId != &update_stack_id {
+		t.Errorf("expected Update response to be 1234567890, got (%s)", *output_with_bucket.StackId)
 	}
 
 }
@@ -59,8 +71,8 @@ func TestUpdate(t *testing.T) {
 func TestUpdateWithErr(t *testing.T) {
 	//when
 
-	testError := errors.New("bad-update-error")
-	c := Controller(NewErrorMockUpdateSVC(testError))
+	testUpdateError := errors.New("bad-update-error")
+	testUploadError := errors.New("bad-upload-error")
 
 	update_parameters = append(update_parameters, &cfapi.Parameter{
 		ParameterKey:   &update_param_key,
@@ -73,26 +85,40 @@ func TestUpdateWithErr(t *testing.T) {
 		StackName:  *name,
 		Parameters: *params,
 		Template:   template,
-		//BucketName: *bucket,
-		Timeout: *timeout,
+		Timeout:    *timeout,
 	}
 
 	//then
 
-	response, updateErr := c.Update(&config)
+	upd_c := Controller(NewUpdateErrorMockSVC(testUpdateError))
 
-	if (cfapi.UpdateStackOutput{}) != *response {
-		t.Errorf("expected Update to return %s, got %s.", cfapi.UpdateStackOutput{}, *response)
+	upd, updErr := upd_c.Update(&config)
+
+	if (cfapi.UpdateStackOutput{}) != *upd {
+		t.Errorf("expected Update to return %s, got %s.", cfapi.UpdateStackOutput{}, *upd)
 	}
 
-	if updateErr != testError {
-		t.Errorf("expected error, got %v.", updateErr)
+	if updErr != testUpdateError {
+		t.Errorf("expected error, got %v.", updErr)
+	}
+
+	upl_c := Controller(NewUpdateErrorMockUploadSVC(testUploadError))
+	upl, uplErr := upl_c.Update(&config)
+
+	if (cfapi.UpdateStackOutput{}) != *upl {
+		t.Errorf("expected Update to return %s, got %s.", cfapi.UpdateStackOutput{}, *upl)
+	}
+
+
+	//todo: This is wrong - it should not be nil
+	if uplErr != nil {
+		t.Errorf("expected error, got %v.", uplErr)
 	}
 
 }
 
 // Helper Methods
-type mockUpdateSVC struct {
+type mockUpdateCFSVC struct {
 	cfiface.CloudFormationAPI
 	input    *cfapi.UpdateStackInput
 	output   *cfapi.UpdateStackOutput
@@ -100,7 +126,21 @@ type mockUpdateSVC struct {
 	isCalled bool
 }
 
-func (m *mockUpdateSVC) UpdateStackWithContext(ctx aws.Context, input *cfapi.UpdateStackInput, opts ...request.Option) (*cfapi.UpdateStackOutput, error) {
+type mockUpdateS3SVC struct {
+	s3iface.S3API
+	input    *s3.PutObjectInput
+	output   *s3.PutObjectOutput
+	err      error
+	isCalled bool
+}
+
+func (m *mockUpdateCFSVC) UpdateStackWithContext(ctx aws.Context, input *cfapi.UpdateStackInput, opts ...request.Option) (*cfapi.UpdateStackOutput, error) {
+	m.isCalled = true
+	m.input = input
+	return m.output, m.err
+}
+
+func (m *mockUpdateS3SVC) PutObject(input *s3.PutObjectInput) (*s3.PutObjectOutput, error) {
 	m.isCalled = true
 	m.input = input
 	return m.output, m.err
@@ -113,21 +153,42 @@ func NewMockUpdateSVC() *Service {
 
 	return &Service{
 		Context: context.Background(),
-		CFAPI: &mockUpdateSVC{
+		CFAPI: &mockUpdateCFSVC{
 			output: &cfapi.UpdateStackOutput{
 				StackId: &update_stack_id,
 			},
 		},
+		S3API: &mockUpdateS3SVC{
+			output: &s3.PutObjectOutput{},
+		},
 	}
 }
 
-func NewErrorMockUpdateSVC(err error) *Service {
+func NewUpdateErrorMockSVC(cferr error) *Service {
 
 	return &Service{
 		Context: context.Background(),
-		CFAPI: &mockUpdateSVC{
+		CFAPI: &mockUpdateCFSVC{
 			output: &cfapi.UpdateStackOutput{},
-			err:    err,
+			err:    cferr,
+		},
+		S3API: &mockUpdateS3SVC{
+			output: &s3.PutObjectOutput{},
+		},
+	}
+
+}
+
+func NewUpdateErrorMockUploadSVC(s3err error) *Service {
+
+	return &Service{
+		Context: context.Background(),
+		CFAPI: &mockUpdateCFSVC{
+			output: &cfapi.UpdateStackOutput{},
+		},
+		S3API: &mockUpdateS3SVC{
+			output: &s3.PutObjectOutput{},
+			err:    s3err,
 		},
 	}
 

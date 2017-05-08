@@ -5,31 +5,31 @@ import (
 	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
-	cf "github.com/aws/aws-sdk-go/service/cloudformation"
-	cfapi "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
+	cfapi "github.com/aws/aws-sdk-go/service/cloudformation"
+	cfiface "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"testing"
 )
 
 var (
-	create_stack_name   = "TestStack"
-	create_stack_status = "CREATE_COMPLETE"
-	create_stack_id     = "Create Stack ID is 1234567890"
+	create_stack_id = "Create Stack ID is 1234567890"
 
-	TestCreateStack cf.Stack = cf.Stack{
-		StackName:   &create_stack_name,
-		StackStatus: &create_stack_status,
+	TestCreateStack cfapi.Stack = cfapi.Stack{
+		StackName:   &stack_name,
+		StackStatus: &stack_status,
 	}
 
-	create_param_key   = "TestParamKey"
-	create_param_value = "TestParamValue"
-	//bucket_name         = "TestBucket"
+	create_param_key           = "TestParamKey"
+	create_param_value         = "TestParamValue"
+	create_bucket_name         = "TestBucket"
 	create_stack_timeout int64 = 1
-	create_parameters    []*cf.Parameter
+	create_parameters    []*cfapi.Parameter
 
-	name     = &create_stack_name
+	name     = &stack_name
 	template = []byte{'T', 'e', 's', 't', 'i', 'n', 'g'}
-	//bucket := &bucket_name
-	timeout = &create_stack_timeout
+	bucket   = &create_bucket_name
+	timeout  = &create_stack_timeout
 )
 
 func TestCreate(t *testing.T) {
@@ -37,26 +37,40 @@ func TestCreate(t *testing.T) {
 
 	c := Controller(NewMockCreateSVC())
 
-	create_parameters = append(create_parameters, &cf.Parameter{
+	create_parameters = append(create_parameters, &cfapi.Parameter{
 		ParameterKey:   &create_param_key,
 		ParameterValue: &create_param_value,
 	})
 
 	params := &create_parameters
 
-	config := Config{
+	config_no_bucket := Config{
 		StackName:  *name,
 		Parameters: *params,
 		Template:   template,
-		//BucketName: *bucket,
-		Timeout: *timeout,
+		Timeout:    *timeout,
 	}
 
 	//then
-	create_output, _ := c.Create(&config)
+	output_no_bucket, _ := c.Create(&config_no_bucket)
 
-	if create_output.StackId != &create_stack_id {
-		t.Errorf("expected Create response to be 1234567890, got (%s)", *create_output.StackId)
+	if output_no_bucket.StackId != &create_stack_id {
+		t.Errorf("expected Create response to be 1234567890, got (%s)", *output_no_bucket.StackId)
+	}
+
+	config_with_bucket := Config{
+		StackName:  *name,
+		Parameters: *params,
+		Template:   template,
+		BucketName: *bucket,
+		Timeout:    *timeout,
+	}
+
+	//then
+	output_with_bucket, _ := c.Create(&config_with_bucket)
+
+	if output_with_bucket.StackId != &create_stack_id {
+		t.Errorf("expected Create response to be 1234567890, got (%s)", *output_with_bucket.StackId)
 	}
 
 }
@@ -64,10 +78,11 @@ func TestCreate(t *testing.T) {
 func TestCreateWithErr(t *testing.T) {
 	//when
 
-	testError := errors.New("bad-create-error")
-	c := Controller(NewErrorMockCreateSVC(testError))
+	testCreateError := errors.New("bad-create-error")
+	testUploadError := errors.New("bad-upload-error")
+	c := Controller(NewErrorMockCreateSVC(testCreateError, testUploadError))
 
-	create_parameters = append(create_parameters, &cf.Parameter{
+	create_parameters = append(create_parameters, &cfapi.Parameter{
 		ParameterKey:   &update_param_key,
 		ParameterValue: &update_param_value,
 	})
@@ -78,34 +93,48 @@ func TestCreateWithErr(t *testing.T) {
 		StackName:  *name,
 		Parameters: *params,
 		Template:   template,
-		//BucketName: *bucket,
-		Timeout: *timeout,
+		BucketName: *bucket,
+		Timeout:    *timeout,
 	}
 
 	//then
 
 	response, createErr := c.Create(&config)
 
-	if (cf.CreateStackOutput{}) != *response {
-		t.Errorf("expected Create to return %T, got %T.", cf.CreateStackOutput{}, *response)
+	if (cfapi.CreateStackOutput{}) != *response {
+		t.Errorf("expected Create to return %T, got %T.", cfapi.CreateStackOutput{}, *response)
 	}
 
-	if createErr != testError {
+	if createErr != testCreateError {
 		t.Errorf("expected error, got %v.", createErr)
 	}
 
 }
 
 // Helper Methods
-type mockCreateSVC struct {
-	cfapi.CloudFormationAPI
-	input    *cf.CreateStackInput
-	output   *cf.CreateStackOutput
+type mockCreateCFSVC struct {
+	cfiface.CloudFormationAPI
+	input    *cfapi.CreateStackInput
+	output   *cfapi.CreateStackOutput
 	err      error
 	isCalled bool
 }
 
-func (m *mockCreateSVC) CreateStackWithContext(ctx aws.Context, input *cf.CreateStackInput, opts ...request.Option) (*cf.CreateStackOutput, error) {
+type mockCreateS3SVC struct {
+	s3iface.S3API
+	input    *s3.PutObjectInput
+	output   *s3.PutObjectOutput
+	err      error
+	isCalled bool
+}
+
+func (m *mockCreateCFSVC) CreateStackWithContext(ctx aws.Context, input *cfapi.CreateStackInput, opts ...request.Option) (*cfapi.CreateStackOutput, error) {
+	m.isCalled = true
+	m.input = input
+	return m.output, m.err
+}
+
+func (m *mockCreateS3SVC) PutObject(input *s3.PutObjectInput) (*s3.PutObjectOutput, error) {
 	m.isCalled = true
 	m.input = input
 	return m.output, m.err
@@ -113,26 +142,33 @@ func (m *mockCreateSVC) CreateStackWithContext(ctx aws.Context, input *cf.Create
 
 func NewMockCreateSVC() *Service {
 
-	var stacks []*cf.Stack
+	var stacks []*cfapi.Stack
 	stacks = append(stacks, &TestCreateStack)
 
 	return &Service{
 		Context: context.Background(),
-		CFAPI: &mockCreateSVC{
-			output: &cf.CreateStackOutput{
+		CFAPI: &mockCreateCFSVC{
+			output: &cfapi.CreateStackOutput{
 				StackId: &create_stack_id,
 			},
+		},
+		S3API: &mockCreateS3SVC{
+			output: &s3.PutObjectOutput{},
 		},
 	}
 }
 
-func NewErrorMockCreateSVC(err error) *Service {
+func NewErrorMockCreateSVC(cferr error, s3err error) *Service {
 
 	return &Service{
 		Context: context.Background(),
-		CFAPI: &mockCreateSVC{
-			output: &cf.CreateStackOutput{},
-			err:    err,
+		CFAPI: &mockCreateCFSVC{
+			output: &cfapi.CreateStackOutput{},
+			err:    cferr,
+		},
+		S3API: &mockCreateS3SVC{
+			output: &s3.PutObjectOutput{},
+			//err:    s3err,
 		},
 	}
 

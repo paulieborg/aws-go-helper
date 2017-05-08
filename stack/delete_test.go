@@ -11,8 +11,7 @@ import (
 )
 
 var (
-	delete_stack_name = "TestStack"
-	delete_name       = &delete_stack_name
+	delete_name = &stack_name
 )
 
 func TestDelete(t *testing.T) {
