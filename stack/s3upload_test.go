@@ -21,7 +21,8 @@ func TestUpload(t *testing.T) {
 		BucketName: bucket_name,
 	}
 
-	response_url, _ := Upload(NewMockUploadSVC(), upload_bucket)
+	svc := NewMockUploadSVC()
+	response_url, _ := svc.Upload(upload_bucket)
 
 	if *response_url != url {
 		t.Errorf("Expected %s, got (%v)", url, *response_url)
@@ -34,7 +35,8 @@ func TestUploadTemplate(t *testing.T) {
 
 	upload_bucket := CFBucket{}
 
-	err := uploadTemplate(NewMockUploadSVC(), upload_bucket)
+	svc := NewMockUploadSVC()
+	err := svc.uploadTemplate(upload_bucket)
 
 	if err != nil {
 		t.Error("Upload returned", err)
@@ -48,7 +50,8 @@ func TestUploadTemplateErr(t *testing.T) {
 
 	testError := errors.New("bad-create-error")
 
-	err := uploadTemplate(NewErrorMockUploadSVC(testError), upload_bucket)
+	svc := NewErrorMockUploadSVC(testError)
+	err := svc.uploadTemplate(upload_bucket)
 
 	if err != testError {
 		t.Errorf("Expected bad-create-error but got (%v)", testError)

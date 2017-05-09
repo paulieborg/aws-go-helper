@@ -27,7 +27,7 @@ func (svc *Service) Create(cfg *Config) (*cfapi.CreateStackOutput, error) {
 			Template:   cfg.Template,
 			BucketName: cfg.BucketName,
 		}
-		c.TemplateURL, err = Upload(svc, b)
+		c.TemplateURL, err = svc.Upload(b)
 
 		if err != nil {
 			return nil, err

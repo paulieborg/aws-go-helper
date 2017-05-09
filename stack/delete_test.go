@@ -31,7 +31,7 @@ func TestDelete(t *testing.T) {
 func TestDeleteWithErr(t *testing.T) {
 	//when
 
-	testError := errors.New("bad-create-error")
+	testError := errors.New("bad-delete-error")
 	c := Controller(NewErrorMockDeleteSVC(testError))
 
 	//then

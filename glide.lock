@@ -1,5 +1,5 @@
-hash: b4740ef5be32d9b7cc975d801df48916bd872ca61a9a2faadaa32601b9642cca
-updated: 2017-04-29T04:57:45.347349579+10:00
+hash: a84d18a8b95439acf11537ea41a3c072d3829aed57ad189b35371d7d4401d902
+updated: 2017-05-09T16:00:03.073924101+10:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 8cab5437f896c3048506422a6fb9f5a7f2df9944
@@ -24,9 +24,17 @@ imports:
   - private/protocol/query
   - private/protocol/query/queryutil
   - private/protocol/rest
+  - private/protocol/restxml
   - private/protocol/xml/xmlutil
   - service/cloudformation
+  - service/cloudformation/cloudformationiface
+  - service/s3
+  - service/s3/s3iface
   - service/sts
+- name: github.com/davecgh/go-spew
+  version: 346938d642f2ec3594ed81d874461961cd0faa76
+  subpackages:
+  - spew
 - name: github.com/go-ini/ini
   version: e7fea39b01aea8d5671f6858f0532f56e8bff3a5
 - name: github.com/jmespath/go-jmespath

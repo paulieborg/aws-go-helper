@@ -27,7 +27,7 @@ func (svc *Service) Update(cfg *Config) (*cfapi.UpdateStackOutput, error) {
 			BucketName: cfg.BucketName,
 		}
 
-		u.TemplateURL, err = Upload(svc, b)
+		u.TemplateURL, err = svc.Upload(b)
 
 		if err != nil {
 			return nil, err

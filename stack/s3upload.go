@@ -17,17 +17,13 @@ type CFBucket struct {
 	URL        string
 }
 
-type UploadTemplate interface {
-	Upload(svc *Service, b CFBucket) (*string, error)
-}
-
 // Upload sends a CFBucket to S3 and returns its URL.
-func Upload(svc *Service, b CFBucket) (*string, error) {
+func (svc *Service) Upload(b CFBucket) (*string, error) {
 	region := os.Getenv("AWS_REGION") // TODO brittle
 	u := fmt.Sprintf("https://s3-%s.amazonaws.com/%s/cloudformation-templates/%s", region, b.BucketName, b.StackName)
 
 	b.URL = u
-	err := uploadTemplate(svc, b)
+	err := svc.uploadTemplate(b)
 
 	if err != nil {
 		return nil, err
@@ -36,17 +32,14 @@ func Upload(svc *Service, b CFBucket) (*string, error) {
 	return &u, err
 }
 
-func uploadTemplate(svc *Service, b CFBucket) (err error) {
+func (svc *Service) uploadTemplate(b CFBucket) error {
 	p := &s3.PutObjectInput{
 		Body:   bytes.NewReader(b.Template),
 		Bucket: &b.BucketName,
 		Key:    aws.String(b.URL),
 	}
 
-	//fmt.Printf("That:\n %v\n", &svc.S3API)
+	_, err := svc.S3API.PutObject(p)
 
-	_, err = svc.S3API.PutObject(p)
-
-	//fmt.Printf("This:\n %v\n", err)
-	return
+	return err
 }

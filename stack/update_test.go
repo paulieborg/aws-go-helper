@@ -28,7 +28,8 @@ var (
 func TestUpdate(t *testing.T) {
 	//when
 
-	c := Controller(NewMockUpdateSVC())
+	svc := NewMockUpdateSVC()
+	c := Controller(&svc)
 
 	update_parameters = append(update_parameters, &cfapi.Parameter{
 		ParameterKey:   &update_param_key,
@@ -45,10 +46,14 @@ func TestUpdate(t *testing.T) {
 	}
 
 	//then
-	output_no_bucket, _ := c.Update(&config_no_bucket)
+	output_no_bucket, aerr := c.Update(&config_no_bucket)
 
 	if output_no_bucket.StackId != &update_stack_id {
 		t.Errorf("expected Update response to be 1234567890, got (%s)", *output_no_bucket.StackId)
+	}
+
+	if aerr != nil {
+		t.Errorf("expected error to be nil, got (%v)", aerr)
 	}
 
 	config_with_bucket := Config{
@@ -60,10 +65,14 @@ func TestUpdate(t *testing.T) {
 	}
 
 	//then
-	output_with_bucket, _ := c.Update(&config_with_bucket)
+	output_with_bucket, berr := c.Update(&config_with_bucket)
 
 	if output_with_bucket.StackId != &update_stack_id {
 		t.Errorf("expected Update response to be 1234567890, got (%s)", *output_with_bucket.StackId)
+	}
+
+	if berr != nil {
+		t.Errorf("expected error to be nil, got (%v)", berr)
 	}
 
 }
@@ -72,7 +81,6 @@ func TestUpdateWithErr(t *testing.T) {
 	//when
 
 	testUpdateError := errors.New("bad-update-error")
-	testUploadError := errors.New("bad-upload-error")
 
 	update_parameters = append(update_parameters, &cfapi.Parameter{
 		ParameterKey:   &update_param_key,
@@ -90,29 +98,50 @@ func TestUpdateWithErr(t *testing.T) {
 
 	//then
 
-	upd_c := Controller(NewUpdateErrorMockSVC(testUpdateError))
+	svc := NewMockUpdateErrSVC(testUpdateError, nil)
+	c := Controller(&svc)
 
-	upd, updErr := upd_c.Update(&config)
+	update, updateErr := c.Update(&config)
 
-	if (cfapi.UpdateStackOutput{}) != *upd {
-		t.Errorf("expected Update to return %s, got %s.", cfapi.UpdateStackOutput{}, *upd)
+	if *update != (cfapi.UpdateStackOutput{}) {
+		t.Errorf("expected Update to return %s, got %s.", cfapi.UpdateStackOutput{}, *update)
 	}
 
-	if updErr != testUpdateError {
-		t.Errorf("expected error, got %v.", updErr)
+	if updateErr != testUpdateError {
+		t.Errorf("expected error, got %v.", updateErr)
 	}
 
-	upl_c := Controller(NewUpdateErrorMockUploadSVC(testUploadError))
-	upl, uplErr := upl_c.Update(&config)
+}
 
-	if (cfapi.UpdateStackOutput{}) != *upl {
-		t.Errorf("expected Update to return %s, got %s.", cfapi.UpdateStackOutput{}, *upl)
+func TestUpdateUploadWithErr(t *testing.T) {
+	//when
+
+	testUploadError := errors.New("bad-upload-error")
+
+	update_parameters = append(update_parameters, &cfapi.Parameter{
+		ParameterKey:   &update_param_key,
+		ParameterValue: &update_param_value,
+	})
+
+	params := &update_parameters
+
+	config := Config{
+		StackName:  *name,
+		Parameters: *params,
+		Template:   template,
+		BucketName: *bucket,
+		Timeout:    *timeout,
 	}
 
+	//then
 
-	//todo: This is wrong - it should not be nil
-	if uplErr != nil {
-		t.Errorf("expected error, got %v.", uplErr)
+	svc := NewMockUpdateErrSVC(nil, testUploadError)
+	c := Controller(&svc)
+
+	_, uplErr := c.Update(&config)
+
+	if uplErr != testUploadError {
+		t.Errorf("expected %v, got %v.", testUploadError, uplErr)
 	}
 
 }
@@ -146,17 +175,12 @@ func (m *mockUpdateS3SVC) PutObject(input *s3.PutObjectInput) (*s3.PutObjectOutp
 	return m.output, m.err
 }
 
-func NewMockUpdateSVC() *Service {
+func NewMockUpdateSVC() Service {
 
-	var stacks []*cfapi.Stack
-	stacks = append(stacks, &TestUpdateStack)
-
-	return &Service{
+	return Service{
 		Context: context.Background(),
 		CFAPI: &mockUpdateCFSVC{
-			output: &cfapi.UpdateStackOutput{
-				StackId: &update_stack_id,
-			},
+			output: &cfapi.UpdateStackOutput{StackId: &update_stack_id},
 		},
 		S3API: &mockUpdateS3SVC{
 			output: &s3.PutObjectOutput{},
@@ -164,9 +188,9 @@ func NewMockUpdateSVC() *Service {
 	}
 }
 
-func NewUpdateErrorMockSVC(cferr error) *Service {
+func NewMockUpdateErrSVC(cferr error, s3err error) Service {
 
-	return &Service{
+	return Service{
 		Context: context.Background(),
 		CFAPI: &mockUpdateCFSVC{
 			output: &cfapi.UpdateStackOutput{},
@@ -174,22 +198,7 @@ func NewUpdateErrorMockSVC(cferr error) *Service {
 		},
 		S3API: &mockUpdateS3SVC{
 			output: &s3.PutObjectOutput{},
-		},
-	}
-
-}
-
-func NewUpdateErrorMockUploadSVC(s3err error) *Service {
-
-	return &Service{
-		Context: context.Background(),
-		CFAPI: &mockUpdateCFSVC{
-			output: &cfapi.UpdateStackOutput{},
-		},
-		S3API: &mockUpdateS3SVC{
-			output: &s3.PutObjectOutput{},
 			err:    s3err,
 		},
 	}
-
 }

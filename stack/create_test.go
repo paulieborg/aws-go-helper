@@ -79,8 +79,7 @@ func TestCreateWithErr(t *testing.T) {
 	//when
 
 	testCreateError := errors.New("bad-create-error")
-	testUploadError := errors.New("bad-upload-error")
-	c := Controller(NewErrorMockCreateSVC(testCreateError, testUploadError))
+	c := Controller(NewErrorMockCreateSVC(testCreateError, nil))
 
 	create_parameters = append(create_parameters, &cfapi.Parameter{
 		ParameterKey:   &update_param_key,
@@ -107,6 +106,39 @@ func TestCreateWithErr(t *testing.T) {
 
 	if createErr != testCreateError {
 		t.Errorf("expected error, got %v.", createErr)
+	}
+
+}
+
+func TestCreateUploadWithErr(t *testing.T) {
+	//when
+
+	testUploadError := errors.New("bad-upload-error")
+
+	update_parameters = append(update_parameters, &cfapi.Parameter{
+		ParameterKey:   &update_param_key,
+		ParameterValue: &update_param_value,
+	})
+
+	params := &update_parameters
+
+	config := Config{
+		StackName:  *name,
+		Parameters: *params,
+		Template:   template,
+		BucketName: *bucket,
+		Timeout:    *timeout,
+	}
+
+	//then
+
+	svc := NewErrorMockCreateSVC(nil, testUploadError)
+	c := Controller(svc)
+
+	_, uplErr := c.Create(&config)
+
+	if uplErr != testUploadError {
+		t.Errorf("expected %v, got %v.", testUploadError, uplErr)
 	}
 
 }
@@ -168,7 +200,7 @@ func NewErrorMockCreateSVC(cferr error, s3err error) *Service {
 		},
 		S3API: &mockCreateS3SVC{
 			output: &s3.PutObjectOutput{},
-			//err:    s3err,
+			err:    s3err,
 		},
 	}
 
